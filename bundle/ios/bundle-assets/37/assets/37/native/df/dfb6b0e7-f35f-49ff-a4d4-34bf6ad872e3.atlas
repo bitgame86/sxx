@@ -1,0 +1,90 @@
+
+alad_symbol.png
+size: 406,270
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bonus
+  rotate: false
+  xy: 233, 152
+  size: 74, 26
+  orig: 76, 28
+  offset: 1, 1
+  index: -1
+bonus_fx
+  rotate: true
+  xy: 2, 20
+  size: 121, 117
+  orig: 123, 119
+  offset: 1, 1
+  index: -1
+bonus_thanden
+  rotate: false
+  xy: 321, 171
+  size: 83, 97
+  orig: 85, 99
+  offset: 1, 1
+  index: -1
+freespin
+  rotate: false
+  xy: 228, 6
+  size: 92, 27
+  orig: 94, 29
+  offset: 1, 1
+  index: -1
+freespin_den
+  rotate: true
+  xy: 229, 36
+  size: 113, 90
+  orig: 115, 92
+  offset: 1, 1
+  index: -1
+freespin_fx
+  rotate: true
+  xy: 121, 151
+  size: 117, 110
+  orig: 119, 112
+  offset: 1, 1
+  index: -1
+jackpot
+  rotate: false
+  xy: 121, 2
+  size: 105, 31
+  orig: 107, 33
+  offset: 1, 1
+  index: -1
+jackpot_chest
+  rotate: true
+  xy: 233, 180
+  size: 88, 86
+  orig: 90, 88
+  offset: 1, 1
+  index: -1
+jackpot_fx
+  rotate: true
+  xy: 2, 143
+  size: 125, 117
+  orig: 127, 119
+  offset: 1, 1
+  index: -1
+wild
+  rotate: false
+  xy: 322, 26
+  size: 82, 45
+  orig: 84, 47
+  offset: 1, 1
+  index: -1
+wild_fx
+  rotate: true
+  xy: 121, 35
+  size: 114, 106
+  orig: 116, 108
+  offset: 1, 1
+  index: -1
+wild_hat
+  rotate: false
+  xy: 321, 73
+  size: 71, 96
+  orig: 73, 98
+  offset: 1, 1
+  index: -1

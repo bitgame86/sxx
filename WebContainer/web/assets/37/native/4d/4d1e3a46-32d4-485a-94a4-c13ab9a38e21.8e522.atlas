@@ -1,0 +1,62 @@
+
+win_aladin.png
+size: 1382,1009
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+NH_aura
+  rotate: false
+  xy: 2, 533
+  size: 543, 474
+  orig: 545, 476
+  offset: 1, 1
+  index: -1
+NH_board
+  rotate: false
+  xy: 507, 166
+  size: 419, 107
+  orig: 425, 111
+  offset: 3, 3
+  index: -1
+NH_char
+  rotate: false
+  xy: 976, 547
+  size: 404, 460
+  orig: 408, 465
+  offset: 2, 3
+  index: -1
+NH_light
+  rotate: true
+  xy: 507, 55
+  size: 109, 117
+  orig: 161, 163
+  offset: 28, 27
+  index: -1
+NH_smoke
+  rotate: true
+  xy: 547, 275
+  size: 732, 427
+  orig: 767, 439
+  offset: 1, 11
+  index: -1
+NH_smoke1
+  rotate: true
+  xy: 2, 2
+  size: 529, 244
+  orig: 542, 254
+  offset: 11, 7
+  index: -1
+NH_text
+  rotate: true
+  xy: 248, 13
+  size: 518, 257
+  orig: 520, 261
+  offset: 1, 2
+  index: -1
+NH_tree
+  rotate: true
+  xy: 976, 28
+  size: 517, 398
+  orig: 526, 402
+  offset: 8, 1
+  index: -1

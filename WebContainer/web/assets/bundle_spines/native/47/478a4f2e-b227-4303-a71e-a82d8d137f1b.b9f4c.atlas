@@ -1,0 +1,83 @@
+
+galaxy.png
+size: 781,230
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+galaxy copy/0
+  rotate: false
+  xy: 591, 110
+  size: 118, 118
+  orig: 118, 118
+  offset: 0, 0
+  index: -1
+galaxy copy/4_number
+  rotate: false
+  xy: 324, 138
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1
+galaxy copy/a
+  rotate: true
+  xy: 324, 14
+  size: 122, 143
+  orig: 122, 151
+  offset: 0, 8
+  index: -1
+galaxy copy/b
+  rotate: false
+  xy: 591, 10
+  size: 71, 98
+  orig: 73, 100
+  offset: 1, 1
+  index: -1
+galaxy copy/bg1
+  rotate: false
+  xy: 2, 2
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+galaxy copy/c
+  rotate: false
+  xy: 469, 2
+  size: 120, 134
+  orig: 120, 134
+  offset: 0, 0
+  index: -1
+galaxy copy/d
+  rotate: true
+  xy: 731, 83
+  size: 66, 42
+  orig: 68, 44
+  offset: 1, 1
+  index: -1
+galaxy copy/e
+  rotate: true
+  xy: 711, 151
+  size: 77, 68
+  orig: 79, 70
+  offset: 1, 1
+  index: -1
+galaxy copy/f
+  rotate: true
+  xy: 731, 25
+  size: 56, 46
+  orig: 58, 48
+  offset: 1, 1
+  index: -1
+galaxy copy/g
+  rotate: true
+  xy: 664, 31
+  size: 77, 65
+  orig: 77, 65
+  offset: 0, 0
+  index: -1
+galaxy copy/t
+  rotate: false
+  xy: 324, 176
+  size: 235, 52
+  orig: 237, 54
+  offset: 1, 1
+  index: -1

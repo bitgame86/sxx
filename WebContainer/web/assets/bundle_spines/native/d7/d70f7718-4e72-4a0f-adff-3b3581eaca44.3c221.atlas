@@ -1,0 +1,90 @@
+
+taixiu_live.png
+size: 518,514
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a.4
+  rotate: false
+  xy: 415, 100
+  size: 99, 131
+  orig: 101, 133
+  offset: 1, 1
+  index: -1
+b.4
+  rotate: true
+  xy: 133, 116
+  size: 168, 181
+  orig: 170, 183
+  offset: 1, 1
+  index: -1
+bg1
+  rotate: false
+  xy: 2, 286
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+bg1.4
+  rotate: true
+  xy: 324, 248
+  size: 264, 155
+  orig: 266, 157
+  offset: 1, 1
+  index: -1
+dotl.4
+  rotate: false
+  xy: 507, 377
+  size: 9, 9
+  orig: 11, 11
+  offset: 1, 1
+  index: -1
+live.4
+  rotate: false
+  xy: 133, 2
+  size: 169, 112
+  orig: 171, 114
+  offset: 1, 1
+  index: -1
+redl.4
+  rotate: true
+  xy: 507, 388
+  size: 124, 7
+  orig: 124, 7
+  offset: 0, 0
+  index: -1
+text-fx.4
+  rotate: true
+  xy: 2, 30
+  size: 254, 129
+  orig: 256, 131
+  offset: 1, 1
+  index: -1
+text.4
+  rotate: true
+  xy: 316, 21
+  size: 225, 97
+  orig: 227, 99
+  offset: 1, 1
+  index: -1
+textl.4
+  rotate: true
+  xy: 481, 233
+  size: 76, 35
+  orig: 78, 37
+  offset: 1, 1
+  index: -1
+ytb.4
+  rotate: true
+  xy: 481, 311
+  size: 201, 24
+  orig: 203, 26
+  offset: 1, 1
+  index: -1
+ytbdot.4
+  rotate: true
+  xy: 2, 13
+  size: 15, 14
+  orig: 17, 16
+  offset: 1, 1
+  index: -1

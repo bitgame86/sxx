@@ -1,0 +1,105 @@
+{
+"skeleton": {
+	"hash": "veDiFVtjm0cUBdQnhp23tm7+1eg",
+	"spine": "3.8.99",
+	"x": -100,
+	"y": -100,
+	"width": 200,
+	"height": 200,
+	"images": "C:/Users/vshun/Desktop/anim/WIN_TX",
+	"audio": ""
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "bone", "parent": "root", "length": 35.78, "rotation": 90, "x": 0.05, "y": 0.27 }
+],
+"slots": [
+	{ "name": "1 copy 1", "bone": "bone", "attachment": "1 copy 10", "blend": "additive" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"1 copy 1": {
+				"1 copy 1": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 2": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 3": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 4": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 5": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 6": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 7": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 8": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 9": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 10": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 11": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 12": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 13": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 14": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 15": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 16": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 17": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 18": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 19": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 20": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 21": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 22": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 23": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 24": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 25": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 26": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 27": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 28": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 29": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 },
+				"1 copy 30": { "x": -0.27, "y": 0.05, "rotation": -90, "width": 200, "height": 200 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"slots": {
+			"1 copy 1": {
+				"attachment": [
+					{ "name": "1 copy 1" },
+					{ "time": 0.0333, "name": "1 copy 2" },
+					{ "time": 0.0667, "name": "1 copy 3" },
+					{ "time": 0.1, "name": "1 copy 4" },
+					{ "time": 0.1333, "name": "1 copy 5" },
+					{ "time": 0.1667, "name": "1 copy 6" },
+					{ "time": 0.2, "name": "1 copy 7" },
+					{ "time": 0.2333, "name": "1 copy 8" },
+					{ "time": 0.2667, "name": "1 copy 9" },
+					{ "time": 0.3, "name": "1 copy 10" },
+					{ "time": 0.3333, "name": "1 copy 11" },
+					{ "time": 0.3667, "name": "1 copy 12" },
+					{ "time": 0.4, "name": "1 copy 13" },
+					{ "time": 0.4333, "name": "1 copy 14" },
+					{ "time": 0.4667, "name": "1 copy 15" },
+					{ "time": 0.5, "name": "1 copy 16" },
+					{ "time": 0.5333, "name": "1 copy 17" },
+					{ "time": 0.5667, "name": "1 copy 18" },
+					{ "time": 0.6, "name": "1 copy 19" },
+					{ "time": 0.6333, "name": "1 copy 20" },
+					{ "time": 0.6667, "name": "1 copy 21" },
+					{ "time": 0.7, "name": "1 copy 22" },
+					{ "time": 0.7333, "name": "1 copy 23" },
+					{ "time": 0.7667, "name": "1 copy 24" },
+					{ "time": 0.8, "name": "1 copy 25" },
+					{ "time": 0.8333, "name": "1 copy 26" },
+					{ "time": 0.8667, "name": "1 copy 27" },
+					{ "time": 0.9, "name": "1 copy 28" },
+					{ "time": 0.9333, "name": "1 copy 29" },
+					{ "time": 0.9667, "name": "1 copy 30" }
+				]
+			}
+		},
+		"bones": {
+			"bone": {
+				"scale": [
+					{ "x": 1.228, "y": 1.228 }
+				]
+			}
+		}
+	}
+}
+}

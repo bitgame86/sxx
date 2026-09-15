@@ -1,0 +1,62 @@
+
+ba_cay.png
+size: 730,274
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 649, 106
+  size: 74, 38
+  orig: 74, 38
+  offset: 0, 0
+  index: -1
+b
+  rotate: true
+  xy: 570, 148
+  size: 122, 156
+  orig: 122, 156
+  offset: 0, 0
+  index: -1
+bg
+  rotate: false
+  xy: 4, 44
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+c
+  rotate: true
+  xy: 328, 17
+  size: 146, 174
+  orig: 146, 174
+  offset: 0, 0
+  index: -1
+d
+  rotate: false
+  xy: 506, 7
+  size: 139, 137
+  orig: 139, 137
+  offset: 0, 0
+  index: -1
+e
+  rotate: false
+  xy: 256, 11
+  size: 61, 29
+  orig: 61, 29
+  offset: 0, 0
+  index: -1
+nnumber
+  rotate: false
+  xy: 4, 4
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1
+text
+  rotate: false
+  xy: 328, 167
+  size: 238, 103
+  orig: 238, 103
+  offset: 0, 0
+  index: -1

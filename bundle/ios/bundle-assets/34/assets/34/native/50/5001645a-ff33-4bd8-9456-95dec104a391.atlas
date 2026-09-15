@@ -1,0 +1,90 @@
+
+icwildwest.png
+size: 484,925
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aisau
+  rotate: true
+  xy: 2, 177
+  size: 208, 251
+  orig: 212, 251
+  offset: 0, 0
+  index: -1
+aochoangtren
+  rotate: true
+  xy: 290, 332
+  size: 219, 140
+  orig: 226, 140
+  offset: 7, 0
+  index: -1
+bg
+  rotate: false
+  xy: 290, 553
+  size: 192, 370
+  orig: 192, 370
+  offset: 0, 0
+  index: -1
+dau
+  rotate: true
+  xy: 370, 15
+  size: 106, 108
+  orig: 121, 115
+  offset: 6, 0
+  index: -1
+overlay
+  rotate: true
+  xy: 255, 2
+  size: 183, 113
+  orig: 183, 113
+  offset: 0, 0
+  index: -1
+tayphai
+  rotate: true
+  xy: 2, 15
+  size: 61, 104
+  orig: 61, 104
+  offset: 0, 0
+  index: -1
+tayphai2
+  rotate: true
+  xy: 255, 187
+  size: 143, 172
+  orig: 151, 176
+  offset: 8, 0
+  index: -1
+taytrai
+  rotate: false
+  xy: 2, 78
+  size: 232, 97
+  orig: 240, 97
+  offset: 0, 0
+  index: -1
+than
+  rotate: false
+  xy: 2, 387
+  size: 286, 536
+  orig: 296, 544
+  offset: 5, 8
+  index: -1
+tuiphai
+  rotate: true
+  xy: 108, 24
+  size: 52, 103
+  orig: 54, 105
+  offset: 1, 1
+  index: -1
+tuitrai
+  rotate: false
+  xy: 432, 440
+  size: 46, 111
+  orig: 48, 113
+  offset: 1, 1
+  index: -1
+txt
+  rotate: true
+  xy: 429, 123
+  size: 207, 53
+  orig: 207, 53
+  offset: 0, 0
+  index: -1

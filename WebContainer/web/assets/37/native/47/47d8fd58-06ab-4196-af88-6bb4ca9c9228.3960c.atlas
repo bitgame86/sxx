@@ -1,0 +1,48 @@
+
+win_aladin.png
+size: 776,929
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Bounus_aura
+  rotate: false
+  xy: 2, 453
+  size: 595, 474
+  orig: 622, 476
+  offset: 26, 1
+  index: -1
+Bounus_bonuss
+  rotate: true
+  xy: 599, 703
+  size: 224, 120
+  orig: 229, 124
+  offset: 3, 3
+  index: -1
+Bounus_char
+  rotate: false
+  xy: 418, 14
+  size: 356, 372
+  orig: 368, 385
+  offset: 6, 6
+  index: -1
+Bounus_game
+  rotate: true
+  xy: 599, 499
+  size: 202, 101
+  orig: 206, 104
+  offset: 2, 2
+  index: -1
+Bounus_light
+  rotate: true
+  xy: 599, 388
+  size: 109, 116
+  orig: 161, 162
+  offset: 28, 27
+  index: -1
+Bounus_smoke
+  rotate: true
+  xy: 2, 2
+  size: 449, 414
+  orig: 460, 429
+  offset: 8, 14
+  index: -1

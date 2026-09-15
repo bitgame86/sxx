@@ -1,0 +1,27 @@
+
+hubonus.png
+size: 1084,575
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bglight
+  rotate: false
+  xy: 2, 2
+  size: 600, 571
+  orig: 600, 571
+  offset: 0, 0
+  index: -1
+iconman
+  rotate: true
+  xy: 604, 49
+  size: 524, 331
+  orig: 524, 331
+  offset: 0, 0
+  index: -1
+txt
+  rotate: true
+  xy: 937, 192
+  size: 381, 145
+  orig: 381, 145
+  offset: 0, 0
+  index: -1

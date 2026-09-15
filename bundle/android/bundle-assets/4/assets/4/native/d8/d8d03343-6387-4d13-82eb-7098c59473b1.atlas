@@ -1,0 +1,27 @@
+
+btn_auto.png
+size: 283,114
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+BT_AUTO
+  rotate: false
+  xy: 223, 54
+  size: 58, 58
+  orig: 60, 60
+  offset: 1, 1
+  index: -1
+auto
+  rotate: false
+  xy: 114, 5
+  size: 107, 107
+  orig: 109, 109
+  offset: 1, 1
+  index: -1
+blur_big
+  rotate: false
+  xy: 2, 2
+  size: 110, 110
+  orig: 110, 110
+  offset: 0, 0
+  index: -1

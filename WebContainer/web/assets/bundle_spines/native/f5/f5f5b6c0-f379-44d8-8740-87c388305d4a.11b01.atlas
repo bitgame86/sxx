@@ -1,0 +1,146 @@
+
+gem.png
+size: 822,530
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+E-fx.3
+  rotate: false
+  xy: 696, 2
+  size: 106, 121
+  orig: 108, 123
+  offset: 1, 1
+  index: -1
+E.3
+  rotate: false
+  xy: 531, 10
+  size: 51, 65
+  orig: 53, 67
+  offset: 1, 1
+  index: -1
+G-fx.3
+  rotate: true
+  xy: 432, 255
+  size: 114, 120
+  orig: 116, 122
+  offset: 1, 1
+  index: -1
+G.3
+  rotate: true
+  xy: 754, 470
+  size: 58, 64
+  orig: 60, 66
+  offset: 1, 1
+  index: -1
+M-fx.3
+  rotate: false
+  xy: 651, 248
+  size: 124, 121
+  orig: 126, 123
+  offset: 1, 1
+  index: -1
+M.3
+  rotate: true
+  xy: 410, 5
+  size: 70, 65
+  orig: 72, 67
+  offset: 1, 1
+  index: -1
+S-fx.3
+  rotate: false
+  xy: 584, 2
+  size: 110, 121
+  orig: 112, 123
+  offset: 1, 1
+  index: -1
+S.3
+  rotate: false
+  xy: 477, 9
+  size: 52, 66
+  orig: 54, 68
+  offset: 1, 1
+  index: -1
+a-fx.3
+  rotate: false
+  xy: 2, 6
+  size: 183, 187
+  orig: 185, 189
+  offset: 1, 1
+  index: -1
+a.3
+  rotate: true
+  xy: 584, 125
+  size: 121, 124
+  orig: 123, 126
+  offset: 1, 1
+  index: -1
+b-fx.3
+  rotate: true
+  xy: 584, 371
+  size: 157, 168
+  orig: 159, 170
+  offset: 1, 1
+  index: -1
+b.3
+  rotate: false
+  xy: 554, 256
+  size: 95, 113
+  orig: 97, 115
+  offset: 1, 1
+  index: -1
+bg1
+  rotate: true
+  xy: 128, 208
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+c-fx.3
+  rotate: true
+  xy: 187, 9
+  size: 197, 183
+  orig: 199, 186
+  offset: 1, 1
+  index: -1
+c.3
+  rotate: false
+  xy: 432, 397
+  size: 133, 131
+  orig: 135, 133
+  offset: 1, 1
+  index: -1
+d-fx.3
+  rotate: true
+  xy: 410, 77
+  size: 173, 172
+  orig: 175, 174
+  offset: 1, 1
+  index: -1
+d.3
+  rotate: false
+  xy: 710, 138
+  size: 110, 108
+  orig: 112, 110
+  offset: 1, 1
+  index: -1
+leaf-fx.3
+  rotate: true
+  xy: 2, 195
+  size: 333, 124
+  orig: 345, 126
+  offset: 0, 0
+  index: -1
+leaf.3
+  rotate: true
+  xy: 356, 252
+  size: 276, 74
+  orig: 278, 76
+  offset: 1, 1
+  index: -1
+nnumber
+  rotate: true
+  xy: 372, 2
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1

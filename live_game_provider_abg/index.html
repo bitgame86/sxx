@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, interactive-widget=overlays-content">
+    <title>Live Stream</title>
+    <link rel="stylesheet" id="main-css" href="style.css?v=16">
+</head>
+
+<body>
+
+    <!-- Live stream fills full screen -->
+    <div id="live-container">
+        <!-- sandbox KHÔNG có allow-top-navigation: chặn game đối tác redirect/reload
+             cả trang (frame-busting) — bản mobile của đối tác hay tự chuyển hướng top-frame. -->
+        <iframe id="live-frame" src="" allowfullscreen frameborder="0"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-pointer-lock"
+            allow="autoplay; fullscreen"></iframe>
+        <!-- Splash che kín trong lúc iframe game của đối tác đang tải. Phải nằm TRONG
+             live-container và sau iframe để phủ lên nó. Cocos không che được webview
+             (webview luôn nằm trên canvas), nên lớp chờ này bắt buộc nằm trong chính trang. -->
+        <div id="splash" class="visible">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Gift popup (TikTok-style bottom sheet) -->
+    <div id="gift-popup" class="gift-popup">
+        <div class="gift-popup-backdrop" id="gift-popup-backdrop"></div>
+        <div class="gift-popup-sheet">
+            <!-- Header progress -->
+            <div class="gift-popup-header">
+                <div class="gift-header-row">
+                    <div class="gift-header-user">
+                        <img class="gift-header-avatar" src="assets/ic_ava_nikname_demo.png" alt="">
+                        <div class="gift-header-vip">
+                            <img class="gift-vip-bg" src="assets/bg_vip_donate.png" alt="">
+                            <img class="gift-vip-icon" src="assets/vip/vp_1.png" alt="">
+                            <span class="gift-vip-level" id="gift-vip-level">1</span>
+                        </div>
+                    </div>
+                    <span class="gift-header-text">Gửi một món Quà tặng để tái kích hoạt phần thưởng của</span>
+                    <span class="gift-header-help">?</span>
+                    <span class="gift-header-arrow">›</span>
+                </div>
+                <div class="gift-progress-track">
+                    <div class="gift-progress-fill" id="gift-progress-fill" style="width:30%"></div>
+                </div>
+            </div>
+            <!-- Gift grid -->
+            <div id="gift-grid" class="gift-grid"></div>
+            <!-- Footer tabs + coin -->
+            <div class="gift-popup-footer">
+                <div class="gift-tabs">
+                    <button class="gift-tab active" data-tab="qua-tang">Quà tặng</button>
+                    <!-- <button class="gift-tab" data-tab="tuong-tac">Tương tác</button>
+                    <button class="gift-tab" data-tab="doc-quyen">Độc quyền</button> -->
+                </div>
+                <button class="gift-coin-btn" id="btn-gift-coin">
+                    <img src="assets/item_coin.png" alt="" class="coin-icon"> <span id="gift-coin-amount">0</span> ›
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gift notifications (TikTok-style) -->
+    <div id="gift-notif-container"></div>
+
+    <!-- Floating chat overlay — luôn hiện trên live, ẩn khi panel chat mở -->
+    <div id="chat-float"></div>
+
+    <!-- Toast notification -->
+    <div id="toast"></div>
+
+    <!-- Backdrop overlay (shown when any panel is open) -->
+    <div id="panel-overlay"></div>
+
+    <!-- Top leaderboard sheet — independent bottom sheet -->
+    <div id="top-sheet">
+        <div id="top-sheet-backdrop"></div>
+        <div id="top-sheet-body">
+            <!-- Header pill -->
+            <div class="top-header">
+                <p class="top-header-title">Bảng Xếp Hạng Hàng Ngày 👑</p>
+            </div>
+            <!-- Countdown + Lịch sử row -->
+            <div class="top-meta-row">
+                <span class="top-meta-sub">🕐 Lần cập nhật: <span id="top-countdown">--:--:--</span></span>
+                <!-- <button class="btn-lich-su">🥇 Lịch Sử Xếp Hạng</button> -->
+            </div>
+            <!-- Top tabs -->
+            <div class="top-tabs">
+                <button class="top-tab active" data-top="idol">Top Idol</button>
+                <button class="top-tab" data-top="donate">Top Donate</button>
+            </div>
+            <!-- Day/Week/Month sub-tabs (Top Donate only) -->
+            <div id="top-donate-subtabs" class="top-donate-subtabs" style="display:none">
+                <button class="top-sub-tab active" data-period="Day">Ngày</button>
+                <button class="top-sub-tab" data-period="Week">Tuần</button>
+                <button class="top-sub-tab" data-period="Month">Tháng</button>
+            </div>
+            <!-- List -->
+            <div id="top-list" class="top-list"></div>
+            <!-- My rank sticky -->
+            <div id="top-my-rank" class="top-my-rank" style="display:none">
+                <img id="top-my-rank-avatar" class="top-item-avatar" src="assets/ic_ava_nikname_demo.png" alt="">
+                <div class="top-my-rank-info">
+                    <span class="top-my-rank-name" id="top-my-rank-name">-</span>
+                    <span class="top-my-rank-sub" id="top-my-rank-sub"></span>
+                </div>
+                <span class="top-my-rank-pos" id="top-my-rank-pos">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom UI overlay -->
+    <div id="bottom-ui">
+
+        <!-- Panel wrapper — chat only -->
+        <div id="panel-wrapper">
+            <div class="panel-top-bar">
+                <button id="btn-panel-close" class="btn-panel-close" aria-label="Đóng">
+                    <img src="assets/close.png" alt="Đóng">
+                </button>
+            </div>
+            <div id="panel-chat" class="panel-content">
+                <div id="chat-messages" class="chat-messages"></div>
+            </div>
+        </div>
+        <!-- /panel-wrapper -->
+
+        <!-- Toolbar — always visible -->
+        <div id="toolbar">
+
+            <!-- Input + Send inline -->
+            <div id="toolbar-middle">
+                <input id="toolbar-input" type="text" placeholder="Nhập" autocomplete="off">
+                <button id="btn-send" aria-label="Gửi">
+                    <img src="assets/item_send.png" alt="">
+                </button>
+            </div>
+
+            <!-- Balance -->
+            <div id="toolbar-balance">
+                <img src="assets/item_coin.png" alt="" class="coin-icon">
+                <span id="balance">0</span>
+            </div>
+
+
+            <!-- People / Chat -->
+            <button id="toolbar-btn-honor" class="toolbar-icon-btn" data-panel="chat" aria-label="Chat">
+                <img src="assets/btnTop.png" alt="">
+            </button>
+
+            <!-- Rose -->
+            <button id="toolbar-btn-rose" class="toolbar-icon-btn" data-panel="gift" aria-label="Quà tặng">
+                <img src="assets/item_rose.png" alt="">
+            </button>
+
+            <!-- Gift box -->
+            <button id="toolbar-btn-gift" class="toolbar-icon-btn" data-panel="top" aria-label="Top donate">
+                <img src="assets/ic_homqua.png" alt="">
+            </button>
+
+
+        </div>
+        <!-- /toolbar -->
+
+    </div>
+    <!-- /bottom-ui -->
+
+    <!-- Draggable floating button (tap = toggle toolbar, drag = move freely) -->
+    <button id="float-btn" class="float-btn" aria-label="Toggle UI">
+        <img src="assets/icon_back.png" alt="">
+    </button>
+
+    <script src="./app.js?v=16"></script>
+
+</body>
+
+</html>

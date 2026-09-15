@@ -1,0 +1,258 @@
+
+iteamlongho.png
+size: 904,117
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Group 23
+  rotate: false
+  xy: 2, 3
+  size: 159, 112
+  orig: 159, 112
+  offset: 0, 0
+  index: -1
+Group 23 copy 6
+  rotate: false
+  xy: 163, 10
+  size: 153, 105
+  orig: 153, 105
+  offset: 0, 0
+  index: -1
+as
+  rotate: true
+  xy: 318, 32
+  size: 83, 183
+  orig: 83, 183
+  offset: 0, 0
+  index: -1
+luachay1
+  rotate: false
+  xy: 780, 44
+  size: 25, 71
+  orig: 30, 80
+  offset: 2, 0
+  index: -1
+luachay2
+  rotate: false
+  xy: 780, 44
+  size: 25, 71
+  orig: 30, 80
+  offset: 2, 0
+  index: -1
+luachay11
+  rotate: false
+  xy: 672, 41
+  size: 24, 74
+  orig: 30, 80
+  offset: 3, 1
+  index: -1
+luachay12
+  rotate: false
+  xy: 672, 41
+  size: 24, 74
+  orig: 30, 80
+  offset: 3, 1
+  index: -1
+luachay13
+  rotate: false
+  xy: 725, 42
+  size: 24, 73
+  orig: 30, 80
+  offset: 3, 1
+  index: -1
+luachay14
+  rotate: true
+  xy: 474, 2
+  size: 28, 74
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay15
+  rotate: true
+  xy: 318, 2
+  size: 28, 76
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay16
+  rotate: true
+  xy: 318, 2
+  size: 28, 76
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay17
+  rotate: true
+  xy: 396, 2
+  size: 28, 76
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay18
+  rotate: true
+  xy: 396, 2
+  size: 28, 76
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay19
+  rotate: false
+  xy: 619, 38
+  size: 26, 77
+  orig: 30, 80
+  offset: 2, 0
+  index: -1
+luachay20
+  rotate: false
+  xy: 590, 38
+  size: 27, 77
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay21
+  rotate: true
+  xy: 836, 31
+  size: 27, 63
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay22
+  rotate: true
+  xy: 830, 3
+  size: 26, 63
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay23
+  rotate: true
+  xy: 836, 60
+  size: 27, 64
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay24
+  rotate: true
+  xy: 836, 60
+  size: 27, 64
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay25
+  rotate: true
+  xy: 692, 10
+  size: 29, 64
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay27
+  rotate: true
+  xy: 550, 4
+  size: 30, 66
+  orig: 30, 80
+  offset: 0, 0
+  index: -1
+luachay28
+  rotate: true
+  xy: 550, 4
+  size: 30, 66
+  orig: 30, 80
+  offset: 0, 0
+  index: -1
+luachay29
+  rotate: true
+  xy: 836, 89
+  size: 26, 66
+  orig: 30, 80
+  offset: 3, 0
+  index: -1
+luachay30
+  rotate: true
+  xy: 836, 89
+  size: 26, 66
+  orig: 30, 80
+  offset: 3, 0
+  index: -1
+luachay3
+  rotate: false
+  xy: 751, 43
+  size: 27, 72
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay31
+  rotate: false
+  xy: 807, 48
+  size: 27, 67
+  orig: 30, 80
+  offset: 2, 0
+  index: -1
+luachay32
+  rotate: false
+  xy: 807, 48
+  size: 27, 67
+  orig: 30, 80
+  offset: 2, 0
+  index: -1
+luachay33
+  rotate: true
+  xy: 758, 13
+  size: 28, 70
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay34
+  rotate: true
+  xy: 758, 13
+  size: 28, 70
+  orig: 30, 80
+  offset: 1, 0
+  index: -1
+luachay4
+  rotate: true
+  xy: 618, 7
+  size: 29, 72
+  orig: 30, 80
+  offset: 0, 0
+  index: -1
+luachay5
+  rotate: false
+  xy: 647, 38
+  size: 23, 77
+  orig: 30, 80
+  offset: 4, 1
+  index: -1
+luachay6
+  rotate: false
+  xy: 561, 38
+  size: 27, 77
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay7
+  rotate: false
+  xy: 503, 36
+  size: 27, 79
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay8
+  rotate: false
+  xy: 532, 36
+  size: 27, 79
+  orig: 30, 80
+  offset: 1, 1
+  index: -1
+luachay9
+  rotate: false
+  xy: 698, 42
+  size: 25, 73
+  orig: 30, 80
+  offset: 3, 1
+  index: -1
+luachay10
+  rotate: false
+  xy: 698, 42
+  size: 25, 73
+  orig: 30, 80
+  offset: 3, 1
+  index: -1

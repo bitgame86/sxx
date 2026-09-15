@@ -1,0 +1,83 @@
+
+salad_pizza.png
+size: 1016,1047
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 528, 37
+  size: 50, 51
+  orig: 50, 51
+  offset: 0, 0
+  index: -1
+NH_light
+  rotate: false
+  xy: 2, 430
+  size: 616, 615
+  orig: 618, 617
+  offset: 1, 1
+  index: -1
+p1
+  rotate: false
+  xy: 620, 537
+  size: 251, 252
+  orig: 253, 255
+  offset: 1, 2
+  index: -1
+p2
+  rotate: true
+  xy: 706, 28
+  size: 259, 219
+  orig: 261, 222
+  offset: 1, 1
+  index: -1
+p3
+  rotate: false
+  xy: 706, 289
+  size: 258, 220
+  orig: 260, 222
+  offset: 1, 1
+  index: -1
+p4
+  rotate: false
+  xy: 451, 90
+  size: 253, 338
+  orig: 253, 338
+  offset: 0, 0
+  index: -1
+p5
+  rotate: true
+  xy: 620, 791
+  size: 254, 290
+  orig: 254, 290
+  offset: 0, 0
+  index: -1
+s_1
+  rotate: false
+  xy: 873, 649
+  size: 141, 140
+  orig: 143, 142
+  offset: 1, 1
+  index: -1
+s_2
+  rotate: false
+  xy: 451, 13
+  size: 75, 75
+  orig: 77, 77
+  offset: 1, 1
+  index: -1
+s_3
+  rotate: false
+  xy: 873, 511
+  size: 139, 136
+  orig: 147, 139
+  offset: 1, 2
+  index: -1
+salad
+  rotate: true
+  xy: 2, 2
+  size: 426, 447
+  orig: 428, 449
+  offset: 1, 1
+  index: -1

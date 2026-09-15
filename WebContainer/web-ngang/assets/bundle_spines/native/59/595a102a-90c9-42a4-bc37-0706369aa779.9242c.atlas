@@ -1,0 +1,195 @@
+
+gems.png
+size: 324,519
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+4_number
+  rotate: true
+  xy: 281, 41
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1
+bg1
+  rotate: false
+  xy: 2, 291
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+g1
+  rotate: false
+  xy: 191, 74
+  size: 48, 13
+  orig: 50, 15
+  offset: 1, 1
+  index: -1
+g10
+  rotate: false
+  xy: 50, 14
+  size: 11, 11
+  orig: 13, 13
+  offset: 1, 1
+  index: -1
+g11
+  rotate: false
+  xy: 79, 6
+  size: 13, 13
+  orig: 15, 15
+  offset: 1, 1
+  index: -1
+g12
+  rotate: true
+  xy: 105, 2
+  size: 8, 15
+  orig: 10, 17
+  offset: 1, 1
+  index: -1
+g13
+  rotate: true
+  xy: 32, 13
+  size: 12, 16
+  orig: 14, 18
+  offset: 1, 1
+  index: -1
+g14
+  rotate: false
+  xy: 122, 2
+  size: 13, 8
+  orig: 15, 10
+  offset: 1, 1
+  index: -1
+g15
+  rotate: true
+  xy: 94, 7
+  size: 12, 9
+  orig: 14, 11
+  offset: 1, 1
+  index: -1
+g16
+  rotate: false
+  xy: 64, 49
+  size: 45, 38
+  orig: 47, 40
+  offset: 1, 1
+  index: -1
+g17
+  rotate: true
+  xy: 173, 17
+  size: 39, 14
+  orig: 41, 16
+  offset: 1, 1
+  index: -1
+g18
+  rotate: false
+  xy: 111, 57
+  size: 32, 30
+  orig: 34, 32
+  offset: 1, 1
+  index: -1
+g19
+  rotate: true
+  xy: 2, 10
+  size: 15, 28
+  orig: 17, 30
+  offset: 1, 1
+  index: -1
+g2
+  rotate: false
+  xy: 145, 11
+  size: 26, 45
+  orig: 28, 47
+  offset: 1, 1
+  index: -1
+g20
+  rotate: false
+  xy: 2, 27
+  size: 60, 60
+  orig: 62, 62
+  offset: 1, 1
+  index: -1
+g21
+  rotate: false
+  xy: 105, 12
+  size: 34, 12
+  orig: 36, 14
+  offset: 1, 1
+  index: -1
+g22
+  rotate: false
+  xy: 111, 26
+  size: 29, 29
+  orig: 31, 31
+  offset: 1, 1
+  index: -1
+g23
+  rotate: false
+  xy: 64, 11
+  size: 13, 36
+  orig: 15, 38
+  offset: 1, 1
+  index: -1
+g24
+  rotate: true
+  xy: 191, 42
+  size: 30, 29
+  orig: 32, 31
+  offset: 1, 1
+  index: -1
+g25
+  rotate: true
+  xy: 241, 55
+  size: 32, 29
+  orig: 34, 31
+  offset: 1, 1
+  index: -1
+g3
+  rotate: false
+  xy: 137, 5
+  size: 5, 5
+  orig: 7, 7
+  offset: 1, 1
+  index: -1
+g5
+  rotate: true
+  xy: 145, 58
+  size: 29, 44
+  orig: 31, 46
+  offset: 1, 1
+  index: -1
+g6
+  rotate: false
+  xy: 32, 5
+  size: 11, 6
+  orig: 13, 8
+  offset: 1, 1
+  index: -1
+g7
+  rotate: false
+  xy: 62, 2
+  size: 10, 7
+  orig: 12, 9
+  offset: 1, 1
+  index: -1
+g8
+  rotate: true
+  xy: 79, 21
+  size: 26, 24
+  orig: 28, 26
+  offset: 1, 1
+  index: -1
+g9
+  rotate: false
+  xy: 50, 2
+  size: 10, 10
+  orig: 12, 12
+  offset: 1, 1
+  index: -1
+gems
+  rotate: false
+  xy: 2, 89
+  size: 277, 200
+  orig: 279, 202
+  offset: 1, 1
+  index: -1

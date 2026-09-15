@@ -1,0 +1,83 @@
+
+EXtexas.png
+size: 523,908
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aisau
+  rotate: false
+  xy: 2, 117
+  size: 208, 251
+  orig: 212, 251
+  offset: 0, 0
+  index: -1
+aochoangtren
+  rotate: false
+  xy: 212, 218
+  size: 219, 140
+  orig: 226, 140
+  offset: 7, 0
+  index: -1
+bg
+  rotate: false
+  xy: 290, 360
+  size: 213, 546
+  orig: 217, 548
+  offset: 1, 1
+  index: -1
+dau
+  rotate: false
+  xy: 410, 54
+  size: 106, 108
+  orig: 121, 115
+  offset: 6, 0
+  index: -1
+tayphai
+  rotate: false
+  xy: 433, 254
+  size: 61, 104
+  orig: 61, 104
+  offset: 0, 0
+  index: -1
+tayphai2
+  rotate: true
+  xy: 236, 2
+  size: 143, 172
+  orig: 151, 176
+  offset: 8, 0
+  index: -1
+taytrai
+  rotate: false
+  xy: 2, 18
+  size: 232, 97
+  orig: 240, 97
+  offset: 0, 0
+  index: -1
+than
+  rotate: false
+  xy: 2, 370
+  size: 286, 536
+  orig: 296, 544
+  offset: 5, 8
+  index: -1
+tuiphai
+  rotate: true
+  xy: 381, 164
+  size: 52, 103
+  orig: 54, 105
+  offset: 1, 1
+  index: -1
+tuitrai
+  rotate: true
+  xy: 410, 6
+  size: 46, 111
+  orig: 48, 113
+  offset: 1, 1
+  index: -1
+wild
+  rotate: false
+  xy: 212, 147
+  size: 167, 69
+  orig: 172, 74
+  offset: 2, 3
+  index: -1

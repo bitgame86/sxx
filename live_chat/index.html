@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Hỗ trợ</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #fff; overflow: hidden; }
+    /* Ép cửa sổ chat chiếm trọn màn hình (webview này chỉ dùng để chat) */
+    #chat-widget-container {
+      position: fixed !important; left: 0 !important; top: 0 !important;
+      width: 100% !important; height: 100% !important;
+      max-width: none !important; max-height: none !important;
+    }
+    #chat-widget-container iframe { width: 100% !important; height: 100% !important; }
+  </style>
+</head>
+<body>
+  <script>
+    // Tham số truyền từ Cocos qua query: ?license=..&name=..&email=..&accountId=..
+    var q = new URLSearchParams(location.search);
+    var cLicense = Number(q.get('license')) || 19876000; // đổi license: sửa ở LiveChatManager.LICENSE
+    var cName = q.get('name') || '';
+    var cEmail = q.get('email') || '';
+    var cAccountId = q.get('accountId') || '';
+
+    // Snippet LiveChat (license lấy từ query, cdn.livechatinc.com)
+    window.__lc = window.__lc || {};
+    window.__lc.license = cLicense;
+    window.__lc.integration_name = 'manual_onboarding';
+    window.__lc.product_name = 'livechat';
+    ;(function (n, t, c) {
+      function i(n) { return e._h ? e._h.apply(null, n) : e._q.push(n); }
+      var e = { _q: [], _h: null, _v: '2.0',
+        on: function () { i(['on', c.call(arguments)]); },
+        once: function () { i(['once', c.call(arguments)]); },
+        off: function () { i(['off', c.call(arguments)]); },
+        get: function () { if (!e._h) throw new Error("[LiveChatWidget] You can't use getters before load."); return i(['get', c.call(arguments)]); },
+        call: function () { i(['call', c.call(arguments)]); },
+        init: function () { var n = t.createElement('script'); n.async = !0; n.type = 'text/javascript'; n.src = 'https://cdn.livechatinc.com/tracking.js'; t.head.appendChild(n); } };
+      !n.__lc.asyncInit && e.init(); n.LiveChatWidget = n.LiveChatWidget || e;
+    }(window, document, [].slice));
+
+    // Sẵn sàng → gán danh tính rồi mở chat full màn.
+    window.LiveChatWidget.on('ready', function () {
+      if (cName) window.LiveChatWidget.call('set_customer_name', cName);
+      if (cEmail) window.LiveChatWidget.call('set_customer_email', cEmail);
+      if (cAccountId) window.LiveChatWidget.call('set_session_variables', { accountId: cAccountId });
+      window.LiveChatWidget.call('maximize');
+    });
+    // Webview này chỉ để chat → nếu bị thu nhỏ thì mở lại cho full.
+    window.LiveChatWidget.on('visibility_changed', function (d) {
+      if (d && d.visibility === 'minimized') window.LiveChatWidget.call('maximize');
+    });
+  </script>
+</body>
+</html>

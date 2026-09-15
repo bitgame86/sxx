@@ -1,0 +1,34 @@
+
+ICE.png
+size: 454,592
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+BN_aura
+  rotate: true
+  xy: 2, 238
+  size: 352, 332
+  orig: 386, 364
+  offset: 17, 16
+  index: -1
+BN_chest2
+  rotate: false
+  xy: 2, 2
+  size: 237, 234
+  orig: 240, 238
+  offset: 2, 2
+  index: -1
+BN_light
+  rotate: true
+  xy: 241, 9
+  size: 209, 206
+  orig: 209, 208
+  offset: 0, 0
+  index: -1
+BN_text
+  rotate: true
+  xy: 336, 220
+  size: 370, 116
+  orig: 375, 120
+  offset: 3, 2
+  index: -1

@@ -1,0 +1,48 @@
+
+xhuPumkin.png
+size: 521,162
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+as
+  rotate: false
+  xy: 2, 2
+  size: 202, 158
+  orig: 202, 158
+  offset: 0, 0
+  index: -1
+hopqua
+  rotate: false
+  xy: 206, 27
+  size: 130, 133
+  orig: 142, 141
+  offset: 6, 4
+  index: -1
+hu
+  rotate: false
+  xy: 428, 11
+  size: 71, 70
+  orig: 71, 70
+  offset: 0, 0
+  index: -1
+x2
+  rotate: false
+  xy: 338, 3
+  size: 88, 78
+  orig: 88, 78
+  offset: 0, 0
+  index: -1
+x4
+  rotate: false
+  xy: 338, 83
+  size: 90, 77
+  orig: 90, 77
+  offset: 0, 0
+  index: -1
+x6
+  rotate: false
+  xy: 430, 83
+  size: 89, 77
+  orig: 89, 77
+  offset: 0, 0
+  index: -1

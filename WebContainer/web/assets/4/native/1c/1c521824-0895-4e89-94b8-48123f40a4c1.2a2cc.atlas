@@ -1,0 +1,62 @@
+
+hutlcl.png
+size: 1667,946
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cap
+  rotate: true
+  xy: 2, 116
+  size: 349, 632
+  orig: 349, 632
+  offset: 0, 0
+  index: -1
+caunl
+  rotate: false
+  xy: 1088, 184
+  size: 108, 93
+  orig: 108, 93
+  offset: 0, 0
+  index: -1
+galaxy
+  rotate: false
+  xy: 2, 467
+  size: 763, 477
+  orig: 763, 477
+  offset: 0, 0
+  index: -1
+ionman
+  rotate: false
+  xy: 1257, 454
+  size: 408, 490
+  orig: 408, 490
+  offset: 0, 0
+  index: -1
+lnen
+  rotate: false
+  xy: 767, 479
+  size: 488, 465
+  orig: 488, 465
+  offset: 0, 0
+  index: -1
+lnen2
+  rotate: false
+  xy: 636, 2
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+texthangcl
+  rotate: false
+  xy: 1088, 279
+  size: 463, 173
+  orig: 463, 173
+  offset: 0, 0
+  index: -1
+txtthanglon
+  rotate: false
+  xy: 2, 22
+  size: 558, 92
+  orig: 558, 92
+  offset: 0, 0
+  index: -1

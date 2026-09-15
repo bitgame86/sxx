@@ -1,0 +1,125 @@
+
+baccrat_live.png
+size: 686,382
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a.1
+  rotate: false
+  xy: 465, 19
+  size: 161, 95
+  orig: 163, 97
+  offset: 1, 1
+  index: -1
+b.1
+  rotate: true
+  xy: 628, 198
+  size: 87, 55
+  orig: 87, 55
+  offset: 0, 0
+  index: -1
+bg1
+  rotate: false
+  xy: 2, 154
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+bg1.1
+  rotate: false
+  xy: 324, 191
+  size: 302, 189
+  orig: 304, 191
+  offset: 1, 1
+  index: -1
+c.1
+  rotate: true
+  xy: 628, 287
+  size: 93, 56
+  orig: 93, 56
+  offset: 0, 0
+  index: -1
+d.1
+  rotate: false
+  xy: 593, 142
+  size: 36, 47
+  orig: 38, 49
+  offset: 1, 1
+  index: -1
+dot.1
+  rotate: false
+  xy: 465, 10
+  size: 7, 7
+  orig: 9, 9
+  offset: 1, 1
+  index: -1
+e.1
+  rotate: false
+  xy: 631, 149
+  size: 38, 47
+  orig: 40, 49
+  offset: 1, 1
+  index: -1
+f.1
+  rotate: false
+  xy: 631, 104
+  size: 39, 43
+  orig: 41, 45
+  offset: 1, 1
+  index: -1
+g.1
+  rotate: false
+  xy: 628, 57
+  size: 38, 45
+  orig: 40, 47
+  offset: 1, 1
+  index: -1
+live.1
+  rotate: false
+  xy: 294, 2
+  size: 169, 112
+  orig: 171, 114
+  offset: 1, 1
+  index: -1
+red.1
+  rotate: false
+  xy: 294, 138
+  size: 15, 14
+  orig: 17, 16
+  offset: 1, 1
+  index: -1
+redl.1
+  rotate: false
+  xy: 2, 6
+  size: 124, 7
+  orig: 124, 7
+  offset: 0, 0
+  index: -1
+text.1
+  rotate: false
+  xy: 205, 4
+  size: 76, 35
+  orig: 78, 37
+  offset: 1, 1
+  index: -1
+text2-fx.1
+  rotate: false
+  xy: 2, 41
+  size: 290, 111
+  orig: 292, 113
+  offset: 1, 1
+  index: -1
+text2.1
+  rotate: false
+  xy: 324, 116
+  size: 267, 73
+  orig: 269, 75
+  offset: 1, 1
+  index: -1
+ytb.1
+  rotate: false
+  xy: 2, 15
+  size: 201, 24
+  orig: 203, 26
+  offset: 1, 1
+  index: -1

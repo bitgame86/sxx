@@ -1,0 +1,454 @@
+
+mini_game_bt.png
+size: 2114,530
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Layer 1
+  rotate: false
+  xy: 2, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 10
+  rotate: false
+  xy: 398, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 11
+  rotate: false
+  xy: 134, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 12
+  rotate: false
+  xy: 266, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 13
+  rotate: false
+  xy: 398, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 14
+  rotate: false
+  xy: 530, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 15
+  rotate: false
+  xy: 266, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 16
+  rotate: false
+  xy: 398, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 17
+  rotate: false
+  xy: 530, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 18
+  rotate: false
+  xy: 662, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 19
+  rotate: false
+  xy: 398, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 2
+  rotate: false
+  xy: 2, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 20
+  rotate: false
+  xy: 530, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 21
+  rotate: false
+  xy: 662, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 22
+  rotate: false
+  xy: 794, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 23
+  rotate: false
+  xy: 530, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 24
+  rotate: false
+  xy: 662, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 25
+  rotate: false
+  xy: 794, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 26
+  rotate: false
+  xy: 926, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 27
+  rotate: false
+  xy: 662, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 28
+  rotate: false
+  xy: 794, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 29
+  rotate: false
+  xy: 926, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 3
+  rotate: false
+  xy: 134, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 30
+  rotate: false
+  xy: 1058, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 31
+  rotate: false
+  xy: 794, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 32
+  rotate: false
+  xy: 926, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 33
+  rotate: false
+  xy: 1058, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 34
+  rotate: false
+  xy: 1190, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 35
+  rotate: false
+  xy: 926, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 36
+  rotate: false
+  xy: 1058, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 37
+  rotate: false
+  xy: 1190, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 38
+  rotate: false
+  xy: 1322, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 39
+  rotate: false
+  xy: 1058, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 4
+  rotate: false
+  xy: 2, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 40
+  rotate: false
+  xy: 1190, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 41
+  rotate: false
+  xy: 1322, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 42
+  rotate: false
+  xy: 1454, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 43
+  rotate: false
+  xy: 1190, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 44
+  rotate: false
+  xy: 1322, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 45
+  rotate: false
+  xy: 1454, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 46
+  rotate: false
+  xy: 1586, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 47
+  rotate: false
+  xy: 1322, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 48
+  rotate: false
+  xy: 1454, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 49
+  rotate: false
+  xy: 1586, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 5
+  rotate: false
+  xy: 134, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 50
+  rotate: false
+  xy: 1718, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 51
+  rotate: false
+  xy: 1454, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 52
+  rotate: false
+  xy: 1586, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 53
+  rotate: false
+  xy: 1718, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 54
+  rotate: false
+  xy: 1850, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 55
+  rotate: false
+  xy: 1586, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 56
+  rotate: false
+  xy: 1718, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 57
+  rotate: false
+  xy: 1850, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 58
+  rotate: false
+  xy: 1982, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 59
+  rotate: false
+  xy: 1718, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 6
+  rotate: false
+  xy: 266, 398
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 60
+  rotate: false
+  xy: 1850, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 61
+  rotate: false
+  xy: 1982, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 62
+  rotate: false
+  xy: 1850, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 63
+  rotate: false
+  xy: 1982, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 7
+  rotate: false
+  xy: 2, 2
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 8
+  rotate: false
+  xy: 134, 134
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+Layer 9
+  rotate: false
+  xy: 266, 266
+  size: 130, 130
+  orig: 130, 130
+  offset: 0, 0
+  index: -1
+minigame
+  rotate: false
+  xy: 1982, 3
+  size: 130, 129
+  orig: 132, 132
+  offset: 1, 2
+  index: -1

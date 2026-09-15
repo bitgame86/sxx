@@ -1,0 +1,97 @@
+
+xeng-hoa-qua.png
+size: 794,453
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 468, 177
+  size: 159, 90
+  orig: 161, 92
+  offset: 1, 1
+  index: -1
+b.1
+  rotate: true
+  xy: 230, 134
+  size: 317, 76
+  orig: 317, 76
+  offset: 0, 0
+  index: -1
+bg1
+  rotate: true
+  xy: 2, 131
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+d
+  rotate: false
+  xy: 308, 149
+  size: 158, 102
+  orig: 160, 104
+  offset: 1, 1
+  index: -1
+d-fx
+  rotate: true
+  xy: 308, 253
+  size: 198, 145
+  orig: 201, 146
+  offset: 1, 0
+  index: -1
+e
+  rotate: false
+  xy: 468, 25
+  size: 151, 150
+  orig: 157, 155
+  offset: 3, 2
+  index: -1
+e-fx
+  rotate: true
+  xy: 455, 269
+  size: 182, 179
+  orig: 187, 184
+  offset: 2, 2
+  index: -1
+f
+  rotate: true
+  xy: 386, 59
+  size: 88, 73
+  orig: 90, 75
+  offset: 1, 1
+  index: -1
+f-fx
+  rotate: true
+  xy: 269, 2
+  size: 130, 115
+  orig: 133, 119
+  offset: 1, 2
+  index: -1
+g
+  rotate: false
+  xy: 126, 4
+  size: 141, 125
+  orig: 145, 130
+  offset: 2, 2
+  index: -1
+g-fx
+  rotate: true
+  xy: 636, 118
+  size: 171, 154
+  orig: 178, 160
+  offset: 3, 3
+  index: -1
+h
+  rotate: false
+  xy: 2, 2
+  size: 122, 127
+  orig: 127, 131
+  offset: 2, 2
+  index: -1
+h-fx
+  rotate: false
+  xy: 636, 291
+  size: 156, 160
+  orig: 161, 164
+  offset: 2, 2
+  index: -1

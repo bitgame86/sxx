@@ -1,0 +1,83 @@
+
+mr-gift.png
+size: 1992,1992
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+mr/1
+  rotate: false
+  xy: 1503, 4
+  size: 384, 475
+  orig: 384, 475
+  offset: 0, 0
+  index: -1
+mr/2
+  rotate: false
+  xy: 1503, 481
+  size: 478, 353
+  orig: 478, 353
+  offset: 0, 0
+  index: -1
+nv/s1
+  rotate: false
+  xy: 1057, 56
+  size: 444, 778
+  orig: 444, 778
+  offset: 0, 0
+  index: -1
+nv/s2
+  rotate: true
+  xy: 1057, 1728
+  size: 260, 933
+  orig: 260, 933
+  offset: 0, 0
+  index: -1
+nv/s3
+  rotate: true
+  xy: 2, 48
+  size: 557, 1053
+  orig: 557, 1053
+  offset: 0, 0
+  index: -1
+nv/s4
+  rotate: true
+  xy: 747, 1329
+  size: 280, 299
+  orig: 280, 299
+  offset: 0, 0
+  index: -1
+nv/s5
+  rotate: false
+  xy: 2, 607
+  size: 743, 1381
+  orig: 743, 1381
+  offset: 0, 0
+  index: -1
+nv/s6
+  rotate: true
+  xy: 747, 1060
+  size: 267, 296
+  orig: 267, 296
+  offset: 0, 0
+  index: -1
+vfx/fxn1
+  rotate: true
+  xy: 747, 1611
+  size: 377, 299
+  orig: 377, 299
+  offset: 0, 0
+  index: -1
+vfx/fxn2
+  rotate: false
+  xy: 747, 644
+  size: 102, 190
+  orig: 102, 190
+  offset: 0, 0
+  index: -1
+vfx/h2
+  rotate: false
+  xy: 1057, 836
+  size: 893, 890
+  orig: 893, 890
+  offset: 0, 0
+  index: -1

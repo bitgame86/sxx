@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Slot SXXBET</title>
+  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="minigame.css?v=1">
+</head>
+
+<body>
+
+  <div id="live-container">
+    <iframe id="live-frame" src="" allowfullscreen frameborder="0"></iframe>
+    <!-- Splash che kín trong lúc iframe game của hãng đang tải. Phải nằm TRONG live-container
+         và sau iframe để phủ lên nó. Cocos không che được webview (webview luôn nằm trên canvas),
+         nên lớp chờ này bắt buộc phải nằm bên trong chính trang. -->
+    <div id="splash" class="visible">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <button id="float-btn" class="float-btn" aria-label="Close">
+    <img src="./assets/icon_back.png" alt="">
+  </button>
+
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
+  <!-- THỨ TỰ QUAN TRỌNG: minigame.js dùng showToast/window.isNative/initDragButton của app.js
+       nên phải nạp SAU. Cùng kiểu chống cache như app.js. -->
+  <script>document.write('<scr' + 'ipt src="app.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+  <!-- Runtime Spine 3.8 (khớp tron_tx / WIN_TX đều là 3.8.99) phải nạp TRƯỚC lớp bọc.
+       Dùng gói PLAYER chứ không phải spine-webgl: MGSpine gọi spine.SpinePlayer, mà lớp đó
+       chỉ có trong gói player. Thiếu file thì lớp bọc tự tắt và minigame rơi về hiệu ứng CSS. -->
+  <link rel="stylesheet" href="spine-player.css?v=1">
+  <script src="./spine-player.js"
+    onerror="console.warn('[mg] chưa có spine-player.js — dùng hiệu ứng dự phòng')"></script>
+  <script>document.write('<scr' + 'ipt src="minigame-spine.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+  <script>document.write('<scr' + 'ipt src="minigame.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+
+</body>
+
+</html>

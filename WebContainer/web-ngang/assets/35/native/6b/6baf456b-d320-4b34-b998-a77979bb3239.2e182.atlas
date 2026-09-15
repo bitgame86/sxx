@@ -1,0 +1,34 @@
+
+khungtongthang.png
+size: 264,381
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+as
+  rotate: true
+  xy: 2, 2
+  size: 377, 108
+  orig: 377, 108
+  offset: 0, 0
+  index: -1
+nen
+  rotate: true
+  xy: 190, 117
+  size: 262, 72
+  orig: 262, 72
+  offset: 0, 0
+  index: -1
+nentrong
+  rotate: true
+  xy: 112, 109
+  size: 270, 76
+  orig: 270, 76
+  offset: 0, 0
+  index: -1
+txt
+  rotate: true
+  xy: 112, 13
+  size: 94, 32
+  orig: 94, 32
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,1842 @@
+/* === RESET & BASE === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --panel-bg: #1c2133;
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --toolbar-bg: #1c2133;
+  --toolbar-height: 72px;
+  /* Chiều cao THỰC của toolbar (đã cộng safe-area). Dùng để đặt các phần tử NGAY TRÊN toolbar,
+     nếu không trên native (safe-area>0) chúng bị toolbar cao lên che mất. */
+  --toolbar-full: calc(var(--toolbar-height) + env(safe-area-inset-bottom));
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --accent-yellow: #fbbf24;
+  --accent-cyan: #38bdf8;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --transition: 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow: hidden;
+  /* Khóa viewport: chặn pull-to-refresh + rubber-band (kéo cả trang rồi reload) trên mobile.
+     position:fixed khóa body không cho kéo; overscroll-behavior:none chặn chaining/refresh. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overscroll-behavior: none;
+}
+
+/* === LIVE CONTAINER === */
+#live-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* bottom set by JS = offsetHeight của bottom-ui */
+  z-index: 0;
+  background: #0a0a10;
+  overflow: hidden;
+}
+
+#live-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Splash chờ iframe game của đối tác tải xong. Cùng khuôn với trang idol (live_tik_tok) và
+   slot_webview để 3 trang nhìn giống nhau. Mặc định display:none, bật bằng .visible —
+   index.html gắn sẵn .visible để splash có mặt NGAY từ frame đầu. */
+#splash {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a10;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+#splash.visible {
+  display: flex;
+  opacity: 1;
+}
+
+#splash.hiding {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* === BOTTOM UI === */
+#bottom-ui {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* === PANEL OVERLAY (backdrop) === */
+/* #panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition);
+}
+
+#panel-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+} */
+
+/* === PANEL WRAPPER === */
+#panel-wrapper {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height var(--transition);
+  background: rgba(28, 33, 51, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px 16px 0 0;
+  border-top: 1px solid var(--panel-border);
+  border-left: 1px solid var(--panel-border);
+  border-right: 1px solid var(--panel-border);
+  transition:
+    max-height var(--transition),
+    background 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === PANEL TOP BAR (close button row) === */
+.panel-top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 10px 2px;
+  flex-shrink: 0;
+}
+
+.btn-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.2s,
+    transform 0.15s;
+}
+
+.btn-panel-close img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.btn-panel-close:hover {
+  opacity: 0.75;
+}
+
+.btn-panel-close:active {
+  transform: scale(0.9);
+}
+
+/* === PANEL CONTENT === */
+.panel-content {
+  display: none;
+}
+
+.panel-content.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* === GIFT POPUP (TikTok-style bottom sheet) === */
+.gift-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+}
+
+.gift-popup.open {
+  pointer-events: auto;
+}
+
+.gift-popup-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.gift-popup.open .gift-popup-backdrop {
+  opacity: 1;
+}
+
+.gift-popup-sheet {
+  position: relative;
+  width: 100%;
+  background: url('assets/bg_qua_tang.png') center top / cover no-repeat;
+  background-color: #1a1d2e;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 72vh;
+}
+
+.gift-popup.open .gift-popup-sheet {
+  transform: translateY(0);
+}
+
+/* Header */
+.gift-popup-header {
+  padding: 12px 14px 8px;
+  flex-shrink: 0;
+}
+
+.gift-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.gift-header-user {
+  position: relative;
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.gift-header-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.gift-header-vip {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 64px;
+}
+
+.gift-vip-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.gift-vip-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.gift-vip-level {
+  position: relative;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 1;
+  margin-left: 1px;
+}
+
+.gift-header-text {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gift-header-help {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.gift-header-arrow {
+  font-size: 36px;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.gift-progress-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gift-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a78bfa, #ec4899);
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Gift grid */
+.gift-grid {
+  /* auto-fill chứ KHÔNG phải repeat(4): chốt cứng 4 cột thì trên màn ngang 1280 mỗi cột
+     rộng ~310px mà icon chỉ 66px → quà bơi giữa biển trống. auto-fill để số cột tự bám
+     bề ngang; clamp cho bề rộng cột co theo màn: màn dọc 375px vẫn ra đúng 4 cột như
+     thiết kế cũ, màn ngang 1280px ra 8 cột.
+     Dùng grid chứ không dùng flex-wrap: grid giữ MỌI hàng cùng bề rộng cột nên hàng cuối
+     thiếu quà vẫn thẳng cột với hàng trên và dồn trái. Flex thì item hàng cuối sẽ grow
+     rộng hơn item hàng trên, nhìn lệch. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(80px, 12vw, 150px), 1fr));
+  align-content: start;
+  gap: 8px;
+  padding: 8px 12px 4px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  min-height: 0;
+}
+
+.gift-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.gift-item {
+  /* Bề ngang co giãn theo màn: 12vw, nhưng không bao giờ hẹp hơn 80px (điện thoại dọc
+     375px vẫn đủ 4 cột như thiết kế cũ) và không rộng quá 170px (màn ngang 1280 ra
+     ~8 cột thay vì 4 cột toang hoác). flex-grow 1 để hàng đầy thì chia đều hết chỗ. */
+  /* Bắt buộc: item của grid cũng mặc định min-width:auto nên không co nhỏ hơn nội dung,
+     mà .gift-item-name để white-space:nowrap → tên dài như "Vương miện" đẩy min lên ~88px,
+     làm cột 1fr phình ra và màn dọc 375px tụt từ 4 cột xuống còn 3. min-width:0 trả quyền
+     co lại cho cột, tên dài thì tự cắt "…" đúng như text-overflow đã khai báo sẵn. */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 6px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+  position: relative;
+}
+
+.gift-item:active {
+  transform: scale(0.94);
+}
+
+.gift-item.selected {
+  background: url('assets/ic_select_qua.png') center / cover no-repeat;
+  border-color: transparent;
+}
+
+.gift-item-badge {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #ec4899;
+  color: #fff;
+  border-radius: 4px;
+  padding: 1px 4px;
+  line-height: 1.4;
+}
+
+.gift-item-emoji {
+  font-size: 54px;
+  line-height: 1;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gift-item-img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+}
+
+.gift-item-name {
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.gift-item-coin {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent-yellow);
+}
+
+.gift-item-coin .coin-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.gift-item-send {
+  margin-top: 2px;
+  display: block;
+  width: 100%;
+  height: 45px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Footer */
+.gift-popup-footer {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.gift-tabs {
+  display: flex;
+  flex: 1;
+  gap: 0;
+}
+
+.gift-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 26px;
+  font-weight: 500;
+  padding: 6px 0;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.gift-tab.active {
+  color: #fff;
+  border-bottom-color: #a855f7;
+  font-weight: 700;
+}
+
+.gift-coin-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.gift-coin-btn .coin-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* Màn THẤP (webview native mở ngang, cao ~590px).
+   Cỡ chữ/ảnh mặc định ở trên vốn tính cho điện thoại dọc; đưa vào màn ngang thì
+   header ăn 111px, footer 66px, 72vh chỉ còn 425px → lưới quà còn 248px, chưa đủ
+   2 hàng (mỗi item ~128px) nên hàng duy nhất bị cắt mất dòng giá xu.
+   Khối này thu nhỏ phần khung (avatar, chữ, tab) và nới trần sheet để đủ 3 hàng.
+   Bám max-height chứ không bám orientation: đúng cái đang thiếu là CHIỀU CAO. */
+@media (max-height: 700px) {
+  .gift-popup-sheet {
+    max-height: 88vh;
+  }
+
+  .gift-popup-header {
+    padding: 8px 12px 6px;
+  }
+
+  .gift-header-row {
+    margin-bottom: 6px;
+  }
+
+  .gift-header-user,
+  .gift-header-avatar {
+    width: 48px;
+  }
+
+  .gift-header-avatar {
+    height: 48px;
+  }
+
+  .gift-header-vip {
+    height: 22px;
+    min-width: 44px;
+    bottom: -4px;
+  }
+
+  .gift-vip-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .gift-vip-level {
+    font-size: 13px;
+  }
+
+  .gift-header-text {
+    font-size: 16px;
+  }
+
+  .gift-header-help {
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+  }
+
+  .gift-header-arrow {
+    font-size: 24px;
+  }
+
+  .gift-grid {
+    padding: 6px 12px 2px;
+  }
+
+  .gift-item {
+    padding: 6px 4px 4px;
+    gap: 3px;
+  }
+
+  .gift-item-img,
+  .gift-item-emoji {
+    width: 56px;
+    height: 56px;
+  }
+
+  .gift-item-emoji {
+    font-size: 44px;
+  }
+
+  .gift-item-name,
+  .gift-item-coin {
+    font-size: 14px;
+  }
+
+  .gift-item-coin .coin-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .gift-item-send {
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .gift-popup-footer {
+    padding: 6px 12px;
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  .gift-tab {
+    font-size: 17px;
+    padding: 4px 0;
+  }
+
+  .gift-coin-btn {
+    font-size: 17px;
+    padding: 5px 10px;
+  }
+
+  .gift-coin-btn .coin-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* === CHAT PANEL === */
+.chat-messages {
+  padding: 4px 16px 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  scroll-behavior: smooth;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 2px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.chat-msg {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.6;
+  animation: fadeInUp 0.22s ease both;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-user {
+  font-weight: 700;
+}
+
+.chat-colon {
+  margin-right: 2px;
+}
+
+.chat-badge {
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.chat-badge-admin {
+  background: #ef4444;
+  color: #fff;
+}
+
+.chat-badge-rank {
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fde68a;
+}
+
+.chat-gift-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.chat-gift-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.chat-gift-qty {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  background: #7c3aed;
+  border-radius: 6px;
+  padding: 0 3px;
+  line-height: 1.4;
+}
+
+.chat-vip-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  min-width: 57px;
+  flex-shrink: 0;
+}
+
+.chat-vip-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.chat-vip-icon {
+  position: relative;
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  z-index: 1;
+}
+
+.chat-vip-level {
+  position: relative;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  z-index: 1;
+  margin-left: 2px;
+}
+
+/* === TOP SHEET (independent bottom sheet) === */
+#top-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  pointer-events: none;
+}
+
+#top-sheet.open {
+  pointer-events: auto;
+}
+
+#top-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+#top-sheet.open #top-sheet-backdrop {
+  opacity: 1;
+}
+
+#top-sheet-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70vh;
+  /* Bỏ bg_top_hang_ngay.png: ảnh rộng 750px và có SẴN góc bo vẽ trong ảnh. Kéo lên
+     full width 1259px thì góc bo của ảnh không còn trùng góc bo thật của sheet nữa,
+     thành ra viền lệch. Gradient CSS bám đúng border-radius bên dưới nên bề ngang nào
+     cũng khít.
+     Lớp 1 làm dải màu tím-hồng cao 130px cho phần tiêu đề, lớp 2 tan dần xuống nền tối
+     để không có đường cắt ngang, lớp 3 là màu nền thân bảng. */
+  background:
+    linear-gradient(180deg, rgba(26, 21, 53, 0) 45%, #1a1535 100%) top / 100% 130px no-repeat,
+    linear-gradient(100deg, #b03a86 0%, #7a4bbe 55%, #6a4bc4 100%) top / 100% 130px no-repeat,
+    #1a1535;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#top-list {
+  flex: 1;
+  min-height: 0;
+  padding: 12px 12px 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+#top-sheet.open #top-sheet-body {
+  transform: translateY(0);
+}
+
+/* Header */
+.top-header {
+  padding: 14px 16px 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.top-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px 6px;
+  flex-shrink: 0;
+}
+
+.top-meta-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.btn-lich-su {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fde68a;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.top-header-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+/* Donate Day/Week/Month sub-tabs */
+.top-donate-subtabs {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 8px;
+  flex-shrink: 0;
+}
+
+.top-sub-tab {
+  flex: 1;
+  padding: 7px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  touch-action: manipulation;
+}
+
+.top-sub-tab.active {
+  background: linear-gradient(135deg, #7c3aed, #db2777);
+  color: #fff;
+}
+
+/* Scrollable list */
+.top-list {
+  padding: 12px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.top-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Trạng thái rỗng.
+   .top-list là flex-column nên một thẻ <p> trần sẽ dính sát mép trên, để lại khoảng
+   trống ~400px bên dưới — nhìn như trang lỗi. margin:auto trong flex-column đẩy khối
+   này ra chính giữa cả hai chiều, khoảng trống thành có chủ đích. */
+.top-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.top-empty-icon {
+  font-size: 56px;
+  line-height: 1;
+  opacity: 0.55;
+  filter: grayscale(0.3);
+}
+
+.top-empty-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.top-empty-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.42);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.top-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+/* Row item */
+.top-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 14px;
+  animation: fadeInUp 0.2s ease both;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Top 3 — use PSD card bg images with large number baked in */
+.top-item.rank-1 {
+  background: url('assets/rank_medal_1.png') left center / 100% 100% no-repeat;
+  height: 88px;
+  padding-left: 17%;
+  border: none;
+}
+.top-item.rank-2 {
+  background: url('assets/rank_medal_2.png') left center / 100% 100% no-repeat;
+  height: 88px;
+  padding-left: 17%;
+  border: none;
+}
+.top-item.rank-3 {
+  background: url('assets/rank_medal_3.png') left center / 100% 100% no-repeat;
+  height: 88px;
+  padding-left: 17%;
+  border: none;
+}
+.top-item.rank-other {
+  background: transparent;
+  height: 88px;
+  padding: 0 14px 0 17%;
+  position: relative;
+}
+
+.top-item.rank-other .top-item-badge.num {
+  position: absolute;
+  left: 0;
+  width: 17%;
+  text-align: center;
+  background: none;
+}
+
+/* Medal badge */
+.top-item-badge {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.top-item-badge.num {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
+}
+
+/* Avatar */
+.top-item-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.top-item.rank-1 .top-item-avatar,
+.top-item.rank-2 .top-item-avatar,
+.top-item.rank-3 .top-item-avatar {
+  width: 68px;
+  height: 68px;
+  border-width: 3px;
+}
+.top-item.rank-1 .top-item-avatar {
+  border-color: #fde68a;
+}
+.top-item.rank-2 .top-item-avatar {
+  border-color: #9ca3af;
+}
+.top-item.rank-3 .top-item-avatar {
+  border-color: #fbbf24;
+}
+
+/* Name + amount */
+.top-item-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-item-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+}
+
+.top-item.rank-1 .top-item-amount,
+.top-item.rank-2 .top-item-amount,
+.top-item.rank-3 .top-item-amount {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* My rank sticky row */
+.top-my-rank {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 4px 10px 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.top-my-rank-pos {
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.top-my-rank-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.top-my-rank-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-my-rank-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* Bottom tab switcher */
+.top-tabs {
+  display: flex;
+  gap: 0;
+  padding: 6px 12px 0;
+  flex-shrink: 0;
+}
+
+.top-tab {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.18s;
+  touch-action: manipulation;
+}
+
+.top-tab.active {
+  color: #fff;
+  border-bottom: 2px solid #ec4899;
+  background: transparent;
+}
+
+/* === TOOLBAR === */
+/* Balance display */
+#toolbar-balance {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 29px;
+  padding: 0 14px 0 6px;
+  height: 58px;
+  min-width: 80px;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#toolbar-balance .coin-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+#balance {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-yellow);
+  letter-spacing: 0.2px;
+}
+
+#toolbar {
+  /* Chiều cao CỘNG THÊM safe-area (home indicator) thay vì để padding ăn vào.
+     box-sizing:border-box + height:72px + padding-bottom:safe-area sẽ khiến vùng nội dung co
+     lại còn 72 - safe-area → nút/chữ bị chèn, "nhìn không rõ" trên native (web safe-area=0 nên
+     không thấy). calc() giữ vùng nội dung đủ 72px, phần safe-area đẩy xuống dưới home indicator. */
+  height: calc(var(--toolbar-height) + env(safe-area-inset-bottom));
+  background: var(--toolbar-bg);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 0 8px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Icon buttons */
+.toolbar-icon-btn {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition:
+    opacity 0.2s,
+    transform 0.15s;
+}
+
+.toolbar-icon-btn:hover {
+  opacity: 0.8;
+}
+
+.toolbar-icon-btn:active {
+  transform: scale(0.88);
+}
+
+.toolbar-icon-btn img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+/* Middle area: input or info text */
+#toolbar-middle {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+#toolbar-input {
+  width: 100%;
+  height: 58px;
+  background: rgba(160, 165, 185, 0.18);
+  border: none;
+  border-radius: 29px;
+  padding: 0 66px 0 18px;
+  color: var(--text-primary);
+  font-size: 22px;
+  outline: none;
+  transition: background 0.2s;
+}
+
+#toolbar-input:focus {
+  background: rgba(160, 165, 185, 0.28);
+}
+
+#toolbar-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbar-info strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.toolbar-info .coin-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* Send button — nằm trong ô input bên phải */
+#btn-send {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#btn-send img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#btn-send:active {
+  transform: translateY(-50%) scale(0.88);
+}
+
+/* Send button */
+.toolbar-send-btn {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  transition:
+    opacity 0.2s,
+    transform 0.15s;
+}
+
+.toolbar-send-btn:hover {
+  opacity: 0.8;
+}
+
+.toolbar-send-btn:active {
+  transform: scale(0.88);
+}
+
+.toolbar-send-btn img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+/* === FLOATING BUTTON === */
+.float-btn {
+  position: fixed;
+  left: 14px;
+  top: calc(var(--toolbar-height) + 16px);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 500;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0.8;
+  transition:
+    left 0.22s ease,
+    top 0.22s ease,
+    opacity 0.2s,
+    transform 0.15s;
+  animation: floatBtnPulse 10s ease-in-out infinite;
+}
+
+/* Chu kỳ 10s: im 9s rồi mới nháy 3 nhịp trong 1s cuối. Phần nháy đặt ở CUỐI để lần đầu vào
+   trang (và sau mỗi lần chạm/kéo — animation dựng lại từ 0) đều được im trọn 9s trước đã. */
+@keyframes floatBtnPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  90% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  91.7% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  93.3% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  95% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  96.7% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  98.3% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.float-btn:active,
+.float-btn.dragging {
+  cursor: grabbing;
+  opacity: 1;
+  transform: scale(0.92);
+  animation: none;
+}
+
+.float-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.float-btn.ui-hidden img {
+  opacity: 0.45;
+}
+
+/* Native: float-btn thu còn 1/2 (web giữ 80px). is-native-app gắn ở app.js khi chạy trong app. */
+.is-native-app .float-btn {
+  width: 60px;
+  height: 60px;
+  padding: 3px;
+}
+
+/* Native: toast tặng quà bị to → thu nhỏ ~35% (web giữ nguyên). */
+.is-native-app .gift-notif {
+  gap: 9px;
+  border-radius: 36px;
+  padding: 8px 18px 8px 8px;
+  max-width: 280px;
+}
+.is-native-app .gift-notif-avatar {
+  width: 46px;
+  height: 46px;
+}
+.is-native-app .gift-notif-user {
+  font-size: 15px;
+}
+.is-native-app .gift-notif-text {
+  font-size: 13px;
+}
+.is-native-app .gift-notif-emoji {
+  font-size: 28px;
+}
+.is-native-app .gift-notif-img {
+  width: 44px;
+  height: 44px;
+}
+.is-native-app .gift-notif-count {
+  font-size: 24px;
+  right: -24px;
+}
+
+/* Native: thu nhỏ toolbar dưới (icon + chữ) — web giữ nguyên. */
+.is-native-app {
+  --toolbar-height: 56px; /* thanh thấp lại; --toolbar-full/chat-float/gift-notif tự theo */
+}
+.is-native-app #toolbar-balance {
+  height: 44px;
+  border-radius: 22px;
+  padding: 0 10px 0 5px;
+}
+.is-native-app #toolbar-balance .coin-icon {
+  width: 24px;
+  height: 24px;
+}
+.is-native-app #balance {
+  font-size: 18px;
+}
+.is-native-app .toolbar-icon-btn {
+  width: 44px;
+  height: 44px;
+}
+.is-native-app .toolbar-icon-btn img {
+  width: 40px;
+  height: 40px;
+}
+.is-native-app #toolbar-input {
+  height: 44px;
+  border-radius: 22px;
+  font-size: 16px;
+  padding: 0 50px 0 14px;
+}
+.is-native-app #btn-send {
+  width: 38px;
+  height: 38px;
+}
+.is-native-app .toolbar-info {
+  font-size: 11px;
+}
+.is-native-app .toolbar-info .coin-icon {
+  width: 13px;
+  height: 13px;
+}
+/* Native: chat text nhỏ lại (web giữ nguyên). */
+.is-native-app .chat-msg {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.is-native-app .chat-badge {
+  font-size: 11px;
+  padding: 1px 4px;
+}
+.is-native-app .chat-gift-img {
+  width: 26px;
+  height: 26px;
+}
+/* Native: chat-float (chat nổi trên video) nhỏ lại. */
+.is-native-app #chat-float .cf-msg {
+  font-size: 15px;
+  padding: 6px 14px 6px 12px;
+  gap: 6px;
+  border-radius: 16px;
+}
+.is-native-app .cf-gift-img {
+  width: 26px;
+  height: 26px;
+}
+
+/* Bottom UI slide transition (for float-btn toggle) */
+#bottom-ui {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Kéo dài background xuống che live content bị lộ khi bottom-ui translate lên */
+#bottom-ui::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  background: var(--toolbar-bg);
+  pointer-events: none;
+}
+
+/* === GIFT NOTIFICATION === */
+#gift-notif-container {
+  position: fixed;
+  left: 10px;
+  bottom: calc(var(--toolbar-full) + 180px);
+  z-index: 210;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  pointer-events: none;
+  transition: bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.gift-popup-open #gift-notif-container {
+  bottom: calc(72vh + 10px);
+}
+
+.gift-notif {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: url('assets/bg_donate_small.png') center / 100% 100% no-repeat;
+  border-radius: 54px;
+  padding: 12px 27px 12px 12px;
+  width: fit-content;
+  max-width: 420px;
+  position: relative;
+  animation: giftNotifIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.gift-notif.hiding {
+  animation: giftNotifOut 0.28s ease forwards;
+}
+
+@keyframes giftNotifIn {
+  from {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes giftNotifOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.9);
+  }
+}
+
+.gift-notif-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+}
+
+.gift-notif-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gift-notif-user {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gift-notif-text {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gift-notif-emoji {
+  font-size: 42px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gift-notif-img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.gift-notif-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.gift-notif-count {
+  position: absolute;
+  right: -36px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.gift-notif-count.hidden {
+  display: none;
+}
+
+@keyframes giftCountBump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.5);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.gift-notif-count.bump {
+  animation: giftCountBump 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* === FLOATING CHAT OVERLAY === */
+#chat-float {
+  position: fixed;
+  left: 0;
+  bottom: calc(var(--toolbar-full) + 12px);
+  opacity: 0;
+  width: calc(100% - 24px);
+  max-width: 100%;
+  z-index: 50;
+  padding: 0 12px 0 10px;
+  pointer-events: none;
+  max-height: 95px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+  transition: opacity 0.2s ease;
+}
+
+#chat-float:not(.hidden) {
+  opacity: 1;
+}
+
+#chat-float .cf-msg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 22px;
+  padding: 10px 20px 10px 16px;
+  font-size: 25px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.92);
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-word;
+  animation: cfSlideIn 0.22s ease both;
+}
+
+#chat-float .cf-user {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cf-gift-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+@keyframes cfSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === TOAST === */
+#toast {
+  position: fixed;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  background: rgba(30, 34, 54, 0.92);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 600;
+  padding: 16px 32px;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 80vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 380px) {
+  .gift-card {
+    flex: 0 0 80px;
+    min-width: 80px;
+  }
+
+  .toolbar-icon-btn,
+  .toolbar-send-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toolbar-icon-btn img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .toolbar-send-btn img {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* === MÀN RỘNG (webview native mở ngang ~1280px) ===
+   Panel chat neo left:0 + right:0 — đúng cho điện thoại dọc, nhưng kéo ra 1280px thì
+   mỗi câu chat ngắn lại trải hết bề ngang màn, mắt phải quét cả mét để đọc một dòng.
+   Chặn thành một cột hẹp neo trái.
+   Toolbar và bảng xếp hạng CỐ Ý để nguyên full width — xem ghi chú bên dưới.
+   ĐẶT CUỐI FILE là bắt buộc: media query không cộng thêm độ ưu tiên, để ở giữa file là
+   bị chính rule gốc nằm sau ghi đè ngược. */
+@media (min-width: 820px) {
+  /* Cho khớp chỗ #chat-float đang nổi ở góc trái dưới. */
+  #panel-wrapper {
+    max-width: 620px;
+  }
+
+  .chat-messages {
+    max-width: 620px;
+  }
+}
+
+/* KHÔNG chặn bề rộng #top-sheet-body và #toolbar-middle.
+   Bảng xếp hạng full width là chủ ý: dòng xếp hạng có hạng + avatar + tên + số tiền,
+   trải rộng thì số tiền nằm hẳn về mép phải, dễ dò theo cột.
+   Ô nhập giữ flex:1 để dài hết chỗ trống; #toolbar-balance vốn đã có flex-shrink:0 +
+   white-space:nowrap nên hộp tiền tự co đúng bằng con số, tiền dài thì nó nới ra và ô
+   nhập ngắn lại — tự cân, không cần chặn cứng bên nào. */

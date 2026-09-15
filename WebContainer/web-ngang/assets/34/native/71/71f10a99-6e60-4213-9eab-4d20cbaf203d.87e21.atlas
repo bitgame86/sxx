@@ -1,0 +1,76 @@
+
+hubonus.png
+size: 1466,1033
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hieu ung/Layer 1
+  rotate: false
+  xy: 841, 364
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 2
+  rotate: false
+  xy: 304, 2
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 3
+  rotate: false
+  xy: 606, 2
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 4
+  rotate: true
+  xy: 908, 62
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 5
+  rotate: false
+  xy: 1143, 364
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 6
+  rotate: true
+  xy: 1187, 62
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/Layer 7
+  rotate: false
+  xy: 2, 2
+  size: 300, 277
+  orig: 300, 277
+  offset: 0, 0
+  index: -1
+hieu ung/backlight
+  rotate: false
+  xy: 2, 281
+  size: 837, 750
+  orig: 837, 750
+  offset: 0, 0
+  index: -1
+hieu ung/bonus
+  rotate: true
+  xy: 1244, 695
+  size: 336, 111
+  orig: 344, 118
+  offset: 3, 4
+  index: -1
+hieu ung/wanted
+  rotate: false
+  xy: 841, 643
+  size: 401, 388
+  orig: 414, 401
+  offset: 6, 7
+  index: -1

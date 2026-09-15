@@ -1,0 +1,41 @@
+
+dragon_win.png
+size: 1388,566
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+TCL_board
+  rotate: true
+  xy: 1042, 2
+  size: 562, 187
+  orig: 564, 205
+  offset: 1, 1
+  index: -1
+TCL_circlefx
+  rotate: true
+  xy: 616, 136
+  size: 428, 424
+  orig: 440, 435
+  offset: 6, 5
+  index: -1
+TCL_cuclon
+  rotate: true
+  xy: 1231, 52
+  size: 512, 155
+  orig: 520, 164
+  offset: 2, 5
+  index: -1
+TCL_light
+  rotate: false
+  xy: 2, 63
+  size: 612, 501
+  orig: 676, 570
+  offset: 31, 37
+  index: -1
+TCL_thang
+  rotate: false
+  xy: 616, 29
+  size: 328, 105
+  orig: 330, 107
+  offset: 1, 1
+  index: -1

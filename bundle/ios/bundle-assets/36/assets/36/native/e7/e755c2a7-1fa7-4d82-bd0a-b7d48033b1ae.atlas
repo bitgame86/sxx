@@ -1,0 +1,55 @@
+
+nimion_character.png
+size: 270,304
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bewild_dai
+  rotate: false
+  xy: 2, 21
+  size: 138, 95
+  orig: 140, 97
+  offset: 1, 1
+  index: -1
+minion_body
+  rotate: true
+  xy: 2, 118
+  size: 75, 183
+  orig: 75, 183
+  offset: 0, 0
+  index: -1
+minion_hand
+  rotate: false
+  xy: 234, 235
+  size: 20, 67
+  orig: 20, 67
+  offset: 0, 0
+  index: -1
+minion_hand1
+  rotate: false
+  xy: 212, 232
+  size: 20, 70
+  orig: 20, 70
+  offset: 0, 0
+  index: -1
+textwild_dai
+  rotate: true
+  xy: 187, 134
+  size: 59, 60
+  orig: 61, 62
+  offset: 1, 1
+  index: -1
+vienwwild_dai
+  rotate: false
+  xy: 142, 2
+  size: 126, 114
+  orig: 128, 116
+  offset: 1, 1
+  index: -1
+wild_dai
+  rotate: true
+  xy: 2, 195
+  size: 107, 208
+  orig: 107, 208
+  offset: 0, 0
+  index: -1

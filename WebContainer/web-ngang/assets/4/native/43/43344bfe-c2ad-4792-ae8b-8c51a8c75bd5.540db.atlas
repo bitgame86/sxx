@@ -1,0 +1,48 @@
+
+thangcuclon.png
+size: 1153,412
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+TCL_aura
+  rotate: true
+  xy: 1055, 99
+  size: 137, 96
+  orig: 139, 100
+  offset: 1, 3
+  index: -1
+TCL_board
+  rotate: true
+  xy: 495, 14
+  size: 396, 103
+  orig: 398, 105
+  offset: 1, 1
+  index: -1
+TCL_char
+  rotate: true
+  xy: 2, 2
+  size: 408, 491
+  orig: 410, 493
+  offset: 1, 1
+  index: -1
+TCL_fx
+  rotate: true
+  xy: 600, 2
+  size: 234, 225
+  orig: 245, 234
+  offset: 10, 8
+  index: -1
+TCL_lightaura
+  rotate: false
+  xy: 827, 9
+  size: 226, 227
+  orig: 226, 227
+  offset: 0, 0
+  index: -1
+TCL_text
+  rotate: false
+  xy: 600, 238
+  size: 463, 172
+  orig: 465, 176
+  offset: 1, 3
+  index: -1

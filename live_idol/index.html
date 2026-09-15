@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Live TikTok</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            background: #000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        #feed {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        .video-slide {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            top: 0;
+            left: 0;
+            will-change: transform;
+        }
+
+        .video-slide video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .loading {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            z-index: 2;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .loading.hiding {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <!-- FLV qua mpegts.js (hỗ trợ iOS ManagedMediaSource 17.1+) -->
+    <script src="https://cdn.jsdelivr.net/npm/mpegts.js@latest/dist/mpegts.js"></script>
+    <!-- HLS fallback (iOS cũ < 17.1 không phát được FLV/MSE; Tencent CSS luôn có sẵn đường .m3u8) -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
+    <!-- (Tùy chọn) LEB/WebRTC độ trễ <1s: nạp Tencent Web LEB SDK ở đây rồi bật protocol 'webrtc'
+         phía Cocos. SRS SDK KHÔNG tương thích Tencent LEB nên đã gỡ bỏ. -->
+    <!-- <script src="https://web.sdk.qcloud.com/player/tcplayer/release/v5/libs/TXLivePlayer-1.2.3.min.js"></script> -->
+</head>
+
+<body>
+    <div id="feed"></div>
+    <script>
+        // ── State ─────────────────────────────────────────────────────────
+        var canSwipe = false;           // Cocos báo có > 1 phòng không
+        var pendingDirection = 0;       // hướng swipe đang chờ isUpdate (+1/-1)
+        var isAnimating = false;
+        var isMuted = false;            // THỬ phát có tiếng trước (top-frame đã activate khi user bấm vào live).
+        //                                 Nếu trình duyệt chặn (iOS) → tryPlay tự fallback muted + chạm để mở tiếng.
+        var _audioUnlocked = false;
+        var isPaused = false;
+        // App native (iOS WKWebView / Android WebView) đã cấu hình cho phép phát media KHÔNG cần
+        // user gesture (mediaTypesRequiringUserActionForPlayback=None / setMediaPlaybackRequiresUserGesture(false)).
+        // → trên native tự bật tiếng, KHÔNG hiện icon "chạm để mở tiếng". Chỉ web mới cần tap.
+        // Nhận diện bằng CẦU NỐI trước, User-Agent chỉ là đường lùi.
+        //
+        // Cầu nối do chính app tiêm vào (`cocosBridge` ở AppController.mm, `CocosBridge` ở
+        // AppActivity.java) — có nó là chắc chắn đang chạy trong app, không phải đoán. Bản cũ chỉ soi
+        // UA, mà UA thì đổi được: app đặt `applicationNameForUserAgent`, hoặc Apple thêm lại token
+        // `Safari` vào WKWebView, là nhận diện sai NGAY. Sai kiểu đó rất khó thấy vì nó không gây lỗi:
+        // app chỉ lặng lẽ chạy theo nhánh web, tức **phát không tiếng** rồi chờ người dùng chạm.
+        var _isNativeApp = (function () {
+            if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.cocosBridge) return true;
+            if (window.CocosBridge && window.CocosBridge.postMessage) return true;
+            var ua = navigator.userAgent || '';
+            if (/\bwv\b/.test(ua)) return true;                                   // Android WebView
+            if (/(iPhone|iPad|iPod)/.test(ua) && !/Safari/.test(ua)) return true; // iOS WKWebView (thiếu token Safari)
+            return false;
+        })();
+        // Gửi message ngược lên Cocos.
+        //  - Web:     postMessage lên frame cha (Cocos nghe 'message').
+        //  - Native:  WebView chạy JS RIÊNG với Cocos → phải qua bridge native:
+        //      iOS     window.webkit.messageHandlers.cocosBridge.postMessage(json)
+        //      Android window.CocosBridge.postMessage(json)
+        //    native nhận rồi gọi window.__onLiveWebMessage(json) bên Cocos JS.
+        function postToCocos(msg) {
+            try {
+                var s = JSON.stringify(msg);
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.cocosBridge) {
+                    window.webkit.messageHandlers.cocosBridge.postMessage(s);
+                } else if (window.CocosBridge && window.CocosBridge.postMessage) {
+                    window.CocosBridge.postMessage(s);
+                } else if (window.parent) {
+                    window.parent.postMessage(msg, '*');
+                }
+            } catch (e) { }
+        }
+        var touchStartY = 0;
+        var touchStartT = 0;
+        var isDragging = false;
+        var dragMoved = false;
+        var wheelAccum = 0;
+        var wheelTimer = null;
+        var currentSrc = '';
+
+        var SNAP_EASE = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        var SNAP_DUR = '0.38s';
+
+        var feed = document.getElementById('feed');
+
+        // ── Debug overlay: hiện log ngay trên màn để xem trên điện thoại ───
+        // Bật bằng cách thêm ?debug=1 vào URL iframe (hoặc đặt DEBUG=true)
+        // var DEBUG = !/[?&]debug=0/.test(location.search); // tạm bật mặc định để soi lỗi; tắt bằng ?debug=0
+        // var dbgBox = null;
+        // function dbg(msg) {
+        //     if (!DEBUG) return;
+        //     if (!dbgBox) {
+        //         dbgBox = document.createElement('div');
+        //         dbgBox.style.cssText = 'position:fixed;top:0;left:0;right:0;max-height:45%;overflow:auto;z-index:9999;' +
+        //             'background:rgba(0,0,0,0.75);color:#0f0;font:11px/1.4 monospace;padding:6px;white-space:pre-wrap;pointer-events:none;';
+        //         document.body.appendChild(dbgBox);
+        //     }
+        //     var t = new Date().toISOString().substr(14, 9);
+        //     dbgBox.textContent = '[' + t + '] ' + msg + '\n' + dbgBox.textContent;
+        //     console.log('[dbg]', msg);
+        // }
+
+        // ── Helpers ───────────────────────────────────────────────────────
+        function getSlide() { return feed.querySelector('.video-slide'); }
+        function getVideo() { var s = getSlide(); return s ? s.querySelector('video') : null; }
+        function getLoading() { var s = getSlide(); return s ? s.querySelector('.loading') : null; }
+        function getVH() { return window.visualViewport ? window.visualViewport.height : window.innerHeight; }
+
+        /**
+         * Chọn cách lấp khung cho thẻ <video>.
+         *
+         * CSS mặc định là `object-fit: cover` — lấp kín khung và **cắt** phần thừa.
+         *
+         * VOD luôn `contain` (G63 chốt 15/09). Trước đó chỉ video NGANG mới `contain`, video dọc để
+         * `cover` vì tưởng phim dọc thì khít màn. Đo lại thì không khít: máy test 720x1650 (tỷ lệ
+         * 0.436) mà tập phim chuẩn 9:16 là 0.5625 — `cover` phóng tới khi lấp kín chiều cao nên tràn
+         * ngang 1.29 lần, **cắt mất 22% chiều ngang**, mỗi bên 11%. Phụ đề sát mép và diễn viên đứng
+         * lệch khung là bay. Và tỷ lệ không hề được chuẩn hoá: `HlsConverter` chạy ffmpeg `-codec
+         * copy`, không scale, nên mỗi bộ phim giữ nguyên khung hình lúc upload.
+         *
+         * Đổi lại là viền đen — dọc thì hai bên, ngang thì trên dưới. Đó là cái giá để thấy trọn
+         * khung hình.
+         *
+         * KHÔNG cần `videoWidth`/`videoHeight` nữa: luật không còn phụ thuộc dọc hay ngang, nên áp
+         * được ngay lúc `loadedmetadata` thay vì đợi giải mã xong. Tiện thể bỏ luôn cú nháy
+         * `cover` → `contain` mà bản cũ dính với video NGANG qua HLS: lúc `loadedmetadata` thì
+         * `videoWidth` vẫn là 0 nên nó nhả về `cover`, tới `resize`/`timeupdate` mới đổi sang `contain`.
+         *
+         * KHÔNG áp cho live: luồng live vẫn `cover` như trước. Đổi cách hiển thị của live là đổi thứ
+         * đang chạy production để phục vụ một việc của VOD.
+         */
+        function applyFitMode(video) {
+            if (!video) return;
+            // Trả về rỗng = nhả lại cho CSS mặc định (`cover`) — đường của live.
+            if (!currentIsSystem) { video.style.objectFit = ''; return; }
+            video.style.objectFit = 'contain';
+        }
+
+        // ── Báo KHUNG HÌNH thật của video cho Cocos ─────────────────────────
+        //
+        // Cocos cần `w`/`h` để biết video dọc hay ngang — chỉ video ngang mới hiện nút xem toàn màn
+        // hình, và Cocos còn dùng hai số này tính dải đen để đặt nút cho khỏi đè lên hình. Thiếu
+        // chúng thì nút xoay KHÔNG BAO GIỜ hiện.
+        //
+        // `applyFitMode` thì KHÔNG còn cần: từ 15/09 VOD luôn `contain`, không hỏi dọc hay ngang nữa.
+        //
+        // 🔴 Gửi ở `loadedmetadata` là KHÔNG ĐỦ: HLS/FLV đi qua MSE, sự kiện đó bắn lúc MediaSource
+        // sẵn sàng nhưng CHƯA giải mã khung nào nên `videoWidth` vẫn là 0. Phim ngắn do
+        // MediaStorageService tách ra đúng là HLS (`index.m3u8`) nên rơi thẳng vào ca này.
+        //
+        // Gọi từ BA nguồn, chỉ gửi một lần cho mỗi nguồn video:
+        //   · `loadedmetadata` — mp4 phát thẳng đã có số ngay
+        //   · `resize`         — sự kiện chuẩn, bắn đúng lúc videoWidth/videoHeight đổi (kể cả 0→thật)
+        //   · `timeupdate`     — lưới đỡ; tới đây video chắc chắn đã giải mã khung
+        /**
+         * Xoay máy xong phải DÀN LẠI.
+         *
+         * Cocos gọi `setRequestedOrientation` nên Activity xoay và WebView (MATCH_PARENT) đổi kích
+         * thước theo. Nhưng trang thì không tự sửa gì: `.video-slide` cao `100vh/100dvh`, mà trên
+         * Android WebView hai đơn vị đó hay GIỮ GIÁ TRỊ CŨ một nhịp sau khi xoay — khung video vẫn
+         * mang số đo của hướng trước, nên video nằm trong một hộp sai tỷ lệ.
+         *
+         * Hoãn 2 nhịp rồi mới đo: `resize` bắn TRƯỚC khi trình duyệt chốt viewport mới, đọc ngay là
+         * lại lấy đúng số cũ.
+         *
+         * Vẫn gọi `applyFitMode` ở cuối dù VOD nay luôn `contain` và xoay máy không đổi giá trị đó:
+         * hộp vừa bị ép lại chiều cao, đặt lại `object-fit` là chốt cho chắc. Một phép gán, không tốn gì.
+         */
+        function relayoutAfterRotate() {
+            setTimeout(function () {
+                var v = getVideo();
+                if (!v) return;
+                var slide = v.parentNode;
+                if (slide && slide.style) {
+                    // Ép lại chiều cao bằng số đo THẬT thay vì tin `100vh`.
+                    slide.style.height = window.innerHeight + 'px';
+                }
+                applyFitMode(v);
+            }, 120);
+        }
+        window.addEventListener('resize', relayoutAfterRotate);
+        window.addEventListener('orientationchange', relayoutAfterRotate);
+
+        var _sizeReported = false;
+        var _sizeBlockLogged = '';   // lý do chặn đã in rồi — `timeupdate` bắn ~4 lần/giây, đừng spam
+        function reportVideoSize(video, from) {
+            if (_sizeReported) return;
+
+            // Log MỘT lần cho mỗi lý do chặn. Không có nó thì "không thấy nút xoay" là một hộp đen:
+            // ba nguồn gọi, ba điều kiện chặn, không biết tắc ở đâu.
+            var block = !currentIsSystem ? 'currentIsSystem=false'
+                : !video ? 'khong co the <video>'
+                    : (!video.videoWidth || !video.videoHeight) ? ('videoWidth/Height van 0 (' + video.videoWidth + 'x' + video.videoHeight + ')')
+                        : '';
+            if (block) {
+                if (_sizeBlockLogged !== block) {
+                    _sizeBlockLogged = block;
+                    var m = 'chua bao duoc khung hinh — ' + block + ' (goi tu ' + from + ')';
+                    console.log('[size] ' + m);
+                    // Đẩy sang Cocos luôn: trang chạy trong iframe nên log của nó nằm ở NGỮ CẢNH KHÁC,
+                    // DevTools mặc định chỉ hiện một bên. Gửi về đây thì mọi dòng nằm chung một chỗ,
+                    // khỏi phải dặn người test đi đổi context — đã mất mấy lượt vì đúng chuyện này.
+                    postToCocos({ type: 'DBG', msg: m });
+                }
+                return;
+            }
+
+            _sizeReported = true;
+            _sizeBlockLogged = '';
+            var ok = 'bao khung hinh ' + video.videoWidth + 'x' + video.videoHeight + ' (goi tu ' + from + ')';
+            console.log('[size] ' + ok);
+            postToCocos({ type: 'DBG', msg: ok });
+            applyFitMode(video);
+            postToCocos({
+                type: 'SYS_VIDEO', isSystem: true, dur: video.duration || 0,
+                w: video.videoWidth, h: video.videoHeight,
+            });
+        }
+
+        function setPosition(px, animated) {
+            var s = getSlide();
+            if (!s) return;
+            s.style.transition = animated ? ('transform ' + SNAP_DUR + ' ' + SNAP_EASE) : 'none';
+            s.style.transform = 'translateY(' + px + 'px)';
+        }
+
+        function snapBack() {
+            setPosition(0, true);
+            setTimeout(function () { isAnimating = false; }, 400);
+        }
+
+        function tryPlay(video) {
+            if (!video) return;
+            video.muted = isMuted;
+            var p = video.play();
+            if (p && p.catch) {
+                p.catch(function () {
+                    // Autoplay bị chặn (vd unmuted mà gesture nằm ở document Cocos, không phải iframe)
+                    // → ép muted rồi play lại để video không bị đơ. User chạm để mở tiếng.
+                    video.muted = true;
+                    isMuted = true;
+                    _audioUnlocked = false;
+                    video.play().catch(function () { });
+                });
+            }
+        }
+
+        function togglePause() {
+            var video = getVideo();
+            if (!video) return;
+            if (video.paused) {
+                video.play().catch(function () { });
+                isPaused = false;
+            } else {
+                video.pause();
+                isPaused = true;
+            }
+        }
+
+        // ── Icon "chạm để mở tiếng" (desktop lẫn mobile, khi đang muted) ───
+        // Desktop cũng bị chặn autoplay-có-tiếng vì gesture nằm ở frame Cocos,
+        // không phải iframe → cần gợi ý click. Click do Cocos bắt (ccSwipeEnd)
+        // vì iframe pointer-events:none; icon chỉ là gợi ý thị giác.
+        var muteHint = null;
+        function showMuteHint() {
+            if (!muteHint) {
+                muteHint = document.createElement('div');
+                // SVG loa gạch chéo (render đồng nhất mọi thiết bị, không phụ thuộc font emoji)
+                muteHint.innerHTML =
+                    '<div style="width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,0.55);' +
+                    'display:flex;align-items:center;justify-content:center;">' +
+                    '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" ' +
+                    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#fff" stroke="#fff"/>' +
+                    '<line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></div>' +
+                    '<div style="margin-top:8px;font:600 13px -apple-system,Roboto,sans-serif;color:#fff;' +
+                    'text-shadow:0 1px 3px rgba(0,0,0,0.6);">' + 'Ch\u1EA1m \u0111\u1EC3 m\u1EDF ti\u1EBFng' + '</div>';
+                // Full màn hình để click ĐÂU cũng mở tiếng (không chỉ mỗi icon).
+                muteHint.style.cssText = 'position:fixed;inset:0;z-index:2147483647;' +
+                    'display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer;user-select:none;';
+                muteHint.addEventListener('click', unmuteNow);
+                muteHint.addEventListener('touchend', function (e) { e.preventDefault(); unmuteNow(); });
+                document.body.appendChild(muteHint);
+            }
+            muteHint.style.display = 'flex';
+            // Desktop: iframe khác origin phải NHẬN CHẠM THẬT thì Chrome mới cho mở tiếng. Nhờ Cocos
+            // đưa iframe lên trên canvas trong lúc đang muted (chỉ web) để cú chạm rơi vào đây.
+            try { window.parent && window.parent.postMessage({ type: 'LIVE_MUTED' }, '*'); } catch (e) { }
+        }
+        function hideMuteHint() {
+            if (muteHint) muteHint.style.display = 'none';
+            // Đã có tiếng → trả iframe về sau canvas để Cocos nhận lại chạm/vuốt/nút.
+            try { window.parent && window.parent.postMessage({ type: 'LIVE_UNMUTED' }, '*'); } catch (e) { }
+        }
+        // Bật tiếng cho stream đang phát muted.
+        // Live FLV/HLS (mpegts.js/hls.js dùng MSE): sau khi phát muted một lúc, bật tiếng dễ KẸT HÌNH
+        // vì audio sourceBuffer tụt lại sau video → MSE giữ hình chờ audio đồng bộ. Cách chữa nhẹ:
+        // sau khi unmute thì nhảy playhead về sát live edge để a/v gặp lại nhau (không phải reconnect).
+        function seekToLiveEdge(v) {
+            if (!v || currentIsSystem) return; // VOD/mp4 hệ thống đang loop → không đụng playhead
+            try {
+                var b = v.buffered;
+                if (b && b.length > 0) {
+                    var be = b.end(b.length - 1);
+                    if (be - v.currentTime > 1) { v.currentTime = Math.max(v.currentTime, be - 0.4); v.play().catch(function () { }); }
+                }
+            } catch (e) { }
+        }
+        // Nếu unmute bị Chrome chặn (gesture nằm ở Cocos, không phải trong iframe) thì thẻ <video>
+        // native (mp4) BỊ PAUSE. Đảm bảo không để video dừng: quay lại muted + phát tiếp, giữ icon.
+        // Số lần đã thử tự bật tiếng trên native cho video hiện tại. Đặt lại mỗi khi đổi nguồn phát.
+        var _nativeUnlockTries = 0;
+        var NATIVE_UNLOCK_MAX = 5;
+
+        function _keepPlayingMuted(v) {
+            isMuted = true;
+            _audioUnlocked = false;
+            try { v.muted = true; } catch (e) { }
+            v.play().catch(function () { });
+
+            // Native cho phép bật tiếng không cần gesture → thử lại tự động thay vì hiện icon.
+            //
+            // ⚠️ Bản cũ thử ĐÚNG MỘT LẦN sau 300ms. Lần đó hỏng (WebView chưa gắn xong audio session,
+            // hoặc video vừa đổi nguồn) là **bỏ cuộc vĩnh viễn** — và vì nhánh native KHÔNG hiện icon
+            // "chạm để mở tiếng", người dùng còn lại một video câm **không có cách nào bật lên**.
+            // Nay thử tối đa 5 lần, giãn dần; hết lượt thì hiện icon để ít nhất còn đường thoát.
+            if (!_isNativeApp) { showMuteHint(); return; }
+
+            if (_nativeUnlockTries >= NATIVE_UNLOCK_MAX) { showMuteHint(); return; }
+            var delay = 300 * (_nativeUnlockTries + 1);
+            _nativeUnlockTries++;
+            setTimeout(function () { if (!_audioUnlocked) unlockAudio(); }, delay);
+        }
+        function unlockAudio() {
+            var v = getVideo();
+            if (!v) return;
+            v.muted = false;
+            var p = v.play();
+            if (p && p.then) {
+                p.then(function () {
+                    // Unmute thành công → có tiếng.
+                    _audioUnlocked = true;
+                    isMuted = false;
+                    _nativeUnlockTries = 0;
+                    hideMuteHint();
+                    seekToLiveEdge(v);
+                    setTimeout(function () { seekToLiveEdge(getVideo()); }, 250);
+                }).catch(function () {
+                    // Bị chặn (mp4 sẽ bị pause) → giữ phát muted, không để video dừng.
+                    _keepPlayingMuted(v);
+                });
+            } else {
+                _audioUnlocked = true;
+                isMuted = false;
+                hideMuteHint();
+                seekToLiveEdge(v);
+            }
+            // Chốt chặn: nếu sau 1 nhịp video bị pause (Chrome pause do unmute) → phục hồi muted.
+            setTimeout(function () {
+                var vv = getVideo();
+                if (vv && vv.paused && !isPaused) _keepPlayingMuted(vv);
+            }, 120);
+        }
+        function unmuteNow() { unlockAudio(); }
+        function unmuteNow() { unlockAudio(); }
+
+        // Ẩn app (background): luôn pause stream.
+        function pauseStream() {
+            var video = getVideo();
+            if (video) { try { video.pause(); } catch (e) { } }
+
+            // VOD (video hệ thống, phim ngắn, video tường idol): DỪNG HÌNH, giữ nguyên khung đang xem.
+            //
+            // ⚠️ ĐỪNG gọi destroyFlv() ở đây. Nó gỡ player rồi `removeAttribute('src') + load()` để
+            // iOS nhả buffer — tức thẻ <video> không còn nguồn nào, và thẻ không nguồn thì vẽ ra
+            // MÀN ĐEN. Với live thì đúng (xem dưới), nhưng với VOD thì người dùng bấm tạm dừng lại
+            // nhận màn đen thay vì khung hình đang xem.
+            //
+            // VOD cũng KHÔNG có lý do phải đóng: nguồn là file tĩnh (mp4/m3u8 VOD), không có kết nối
+            // http-flv nào đang treo để giải phóng.
+            if (currentIsSystem) return;
+
+            // LIVE: ĐÓNG HẲN player để giải phóng kết nối http-flv (iOS giết pipeline media, giữ
+            // player chỉ để lại kết nối treo → vào lại/tab lại bị chặn). currentFlvSrc vẫn giữ để tạo lại.
+            destroyFlv();
+        }
+        // Mở lại (foreground): tạo lại player fresh từ currentFlvSrc.
+        var _lastResumeTs = 0;
+        function playStream() {
+            var video = getVideo();
+            if (!video) return;
+
+            // VOD: chỉ phát tiếp từ chỗ đang dừng. Player chưa hề bị gỡ (xem `pauseStream`), nguồn
+            // vẫn còn nguyên trong thẻ <video>.
+            //
+            // ⚠️ ĐỪNG rơi xuống nhánh `attachPlayer` bên dưới: `currentFlvSrc` được gán cho MỌI
+            // nguồn, kể cả mp4/m3u8 VOD — gắn lại player là nạp nguồn từ đầu, tức bấm "phát tiếp"
+            // lại quay về giây 0.
+            //
+            // Cũng bỏ qua luôn cái chặn 800ms: nó sinh ra để chống sự kiện background/foreground bắn
+            // trùng, còn ở đây là người dùng tự bấm — chặn là nút nhìn như chết.
+            if (currentIsSystem) {
+                isPaused = false;
+                video.muted = isMuted;
+                tryPlay(video);
+                return;
+            }
+
+            var now = Date.now();
+            if (now - _lastResumeTs < 800) return;
+            _lastResumeTs = now;
+            isPaused = false;
+            video.muted = isMuted;
+            if (currentFlvSrc) {
+                attachPlayer(video, currentFlvSrc); // đã destroy lúc pause → tạo lại kết nối sạch
+            } else {
+                tryPlay(video);
+            }
+        }
+        var _resumeCheckTimer = null;
+
+        // ── FLV player (flv.js) ───────────────────────────────────────────
+        var currentFlv = null;
+        var currentFlvSrc = '';   // url FLV + token mới nhất (dùng khi cần reconnect)
+        // Phòng SYSTEM: video dựng sẵn (mp4/m3u8 VOD) → cho loop, không phải live.
+        // Phải dùng CỜ từ Cocos vì .m3u8 có thể là live (Tencent) HOẶC video system.
+        var currentIsSystem = false;
+        /**
+         * Video system này có lặp lại không.
+         *
+         * `isSystem` một mình KHÔNG đủ để quyết: nó gom hai thứ hành xử ngược nhau.
+         *   · video tường idol / idol dựng sẵn → LẶP, để trông như đang live
+         *   · tập phim ngắn                    → HẾT LÀ THÔI, để Cocos tự sang tập kế
+         *
+         * Mặc định `true`: nơi gọi cũ (`IdolLiveView`, `VodScreen`) không gửi trường này và phải giữ
+         * nguyên hành vi lặp như trước.
+         */
+        var currentLoop = true;
+        var _flvReconnectTs = 0;  // chống reconnect dồn dập
+        var _flvSeekTimer = null; // timer ép playhead vào buffer (live edge) lúc mới attach
+        var _flvDiagTimer = null; // watchdog: phát hiện buffered rỗng → reattach video-only
+        var _flvAudioDropped = false; // đã tự bỏ audio (do lệch timestamp a/v) hay chưa
+
+        function extractQuery(url) {
+            var i = url.indexOf('?');
+            return i === -1 ? '' : url.substring(i);
+        }
+
+        // URL hay bị HTML-encode khi truyền qua lại (&amp; &#38; ...) → trả về & thật
+        function decodeUrl(u) {
+            if (!u) return u;
+            return u.replace(/&amp;/g, '&').replace(/&#38;/g, '&').replace(/&#x26;/gi, '&');
+        }
+
+        // Tạo/đổi player FLV cho live (token nằm trong query của url .flv)
+        // mpegts.js (kế nhiệm flv.js) — hỗ trợ iOS ManagedMediaSource. Fallback flvjs nếu có.
+        var FLV = window.mpegts || window.flvjs;
+        function attachFlv(video, src, noAudio) {
+            console.log('attachFlv ::', video, src, noAudio)
+            destroyFlv();
+            video.loop = false; // reset: slide trước có thể là mp4 (loop=true) — live không được loop
+            currentFlvSrc = src;
+            if (!noAudio) _flvAudioDropped = false; // lần attach mới (user) → cho phép thử lại audio
+            FLV = window.mpegts || window.flvjs;
+            // iOS ManagedMediaSource cần tắt remote playback thì mới gắn source được
+            try { video.disableRemotePlayback = true; } catch (e) { }
+            console.log('[FLV] lib=', (window.mpegts ? 'mpegts' : (window.flvjs ? 'flvjs' : 'none')),
+                ' isSupported=', FLV && FLV.isSupported(),
+                ' MMS=', typeof window.ManagedMediaSource !== 'undefined',
+                ' MSE=', typeof window.MediaSource !== 'undefined');
+            if (FLV && FLV.isSupported()) {
+                currentFlv = FLV.createPlayer(
+                    { type: 'flv', url: src, isLive: true, hasAudio: !noAudio, hasVideo: true },
+                    {
+                        enableStashBuffer: false,
+                        autoCleanupSourceBuffer: true,
+                        // Live Tencent hay vào giữa dòng với DTS lớn → playhead (0) nằm NGOÀI buffer
+                        // → 0 decodedFrames, màn đen. Bật latency-chasing để tự seek tới live edge.
+                        liveBufferLatencyChasing: true,
+                        liveBufferLatencyMaxLatency: 3.0,
+                        liveBufferLatencyMinRemain: 0.4,
+                    }
+                );
+                currentFlv.attachMediaElement(video);
+                currentFlv.on(FLV.Events.ERROR, function (errType, errDetail, errInfo) {
+                    console.log('[FLV ERROR]', errType, errDetail, errInfo);
+                    // Chỉ reconnect khi lỗi mạng KHÔNG cứu được. Lỗi nhẹ để lib tự xử, tránh loop.
+                    var unrecoverable = (errType === FLV.ErrorTypes.NETWORK_ERROR);
+                    if (unrecoverable) {
+                        var now = Date.now();
+                        if (now - _flvReconnectTs > 4000) {
+                            _flvReconnectTs = now;
+                            var v = getVideo();
+                            if (v) { attachFlv(v, currentFlvSrc); tryPlay(v); }
+                        }
+                    }
+                });
+                currentFlv.on(FLV.Events.MEDIA_INFO, function (mi) {
+                    console.log('[FLV] mediaInfo videoCodec=', mi && mi.videoCodec, ' audioCodec=', mi && mi.audioCodec, ' mime=', mi && mi.mimeType);
+                });
+                var _playLogged = false;
+                currentFlv.on(FLV.Events.STATISTICS_INFO, function (st) {
+                    if (!_playLogged && st && st.decodedFrames > 0) { _playLogged = true; console.log('[FLV] playing, decoded=', st.decodedFrames); }
+                });
+                video.addEventListener('error', function () {
+                    console.log('[FLV] <video> error code=', video.error && video.error.code);
+                }, { once: true });
+                currentFlv.load();
+                // Thử phát CÓ TIẾNG trước (isMuted=false); nếu trình duyệt chặn → fallback muted.
+                video.muted = isMuted;
+                var pp = video.play();
+                if (pp && pp.catch) pp.catch(function () { video.muted = true; isMuted = true; _audioUnlocked = false; video.play().catch(function () { }); });
+
+                // Dự phòng: ép playhead vào vùng buffer (live edge) trong ~10s đầu.
+                // Chữa triệt để ca "decodedFrames=0 + màn đen" khi DTS khởi đầu lớn.
+                clearInterval(_flvSeekTimer);
+                var _seekTries = 0;
+                _flvSeekTimer = setInterval(function () {
+                    _seekTries++;
+                    var b = video.buffered;
+                    if (b && b.length > 0) {
+                        var bs = b.start(0);
+                        var be = b.end(b.length - 1);
+                        // Playhead ngoài buffer hoặc tụt quá xa live edge → nhảy tới sát live edge.
+                        if (video.currentTime < bs - 0.1 || be - video.currentTime > 5) {
+                            try { video.currentTime = Math.max(bs, be - 1); } catch (e) { }
+                            video.play().catch(function () { });
+                        }
+                    }
+                    if (video.currentTime > 0.05 || _seekTries > 40) clearInterval(_flvSeekTimer);
+                }, 250);
+
+                // Watchdog: buffered rỗng KÉO DÀI + video ĐỨNG HÌNH (range audio/video lệch nhau
+                // → giao = rỗng) → reattach VIDEO-ONLY để cứu hình. Chỉ thử 1 lần mỗi lần attach.
+                //
+                // QUAN TRỌNG — chống kích nhầm: bản cũ chỉ cần buffered rỗng ở GIÂY THỨ 4 là bỏ audio.
+                // Trên server thật (độ trễ/jitter cao) 4 giây đầu buffer thường vẫn rỗng dù stream
+                // đang tới → bỏ audio nhầm → "deploy mất tiếng còn local thì không". Nay yêu cầu:
+                //   - buffer rỗng LIÊN TỤC nhiều giây (không phải chỉ một thời điểm), VÀ
+                //   - video KHÔNG nhích (currentTime đứng yên) → đúng ca kẹt hình thật.
+                // Nếu video đã chạy (currentTime tiến) thì KHÔNG bao giờ đụng tới audio.
+                clearInterval(_flvDiagTimer);
+                var _wdN = 0;
+                var _wdEmptyStreak = 0;
+                var _wdLastTime = -1;
+                _flvDiagTimer = setInterval(function () {
+                    _wdN++;
+                    var b = video.buffered;
+                    var empty = !b || b.length === 0;
+                    var stuck = video.currentTime === _wdLastTime; // không tiến so với giây trước
+                    _wdLastTime = video.currentTime;
+
+                    // Video đang chạy (có buffer HOẶC currentTime tiến) → reset, không bao giờ bỏ audio.
+                    if (!empty || !stuck) {
+                        _wdEmptyStreak = 0;
+                    } else {
+                        _wdEmptyStreak++;
+                    }
+
+                    // Rỗng + đứng hình liên tục ~8s → mới coi là lệch a/v thật, bỏ audio cứu hình.
+                    if (_wdEmptyStreak >= 8 && !_flvAudioDropped) {
+                        _flvAudioDropped = true;
+                        console.warn('[FLV] buffered rỗng + đứng hình kéo dài → reattach video-only (bỏ audio)');
+                        clearInterval(_flvDiagTimer);
+                        clearInterval(_flvSeekTimer);
+                        attachFlv(video, currentFlvSrc, true);
+                        return;
+                    }
+                    if (_wdN >= 20) clearInterval(_flvDiagTimer); // hết cửa sổ theo dõi
+                }, 1000);
+            } else {
+                console.log('[FLV] không hỗ trợ (mpegts/flvjs isSupported=false)');
+            }
+        }
+
+        // Refresh token: http-flv chỉ kiểm token lúc CONNECT — kết nối đang mở vẫn stream tiếp
+        // dù token hết hạn. → KHÔNG tạo lại player (tránh nhiều fetch chồng nhau / giật).
+        // Chỉ lưu token mới để dùng khi cần reconnect (mất mạng).
+        function refreshFlvSrc(newSrc) {
+            currentFlvSrc = newSrc;
+            return true;
+        }
+
+        function destroyFlv() {
+            clearTimeout(_resumeCheckTimer);
+            clearInterval(_flvSeekTimer);
+            clearInterval(_flvDiagTimer);
+            if (currentFlv) {
+                try {
+                    currentFlv.pause();
+                    currentFlv.unload();
+                    currentFlv.detachMediaElement();
+                    currentFlv.destroy();
+                } catch (e) { }
+                currentFlv = null;
+            }
+            // Dọn luôn HLS/WebRTC nếu đang dùng (đổi nguồn giữa các protocol).
+            destroyHls();
+            destroyWebrtc();
+            // Reset video element để iOS nhả ManagedMediaSource + đóng buffer cũ
+            var v = getVideo();
+            if (v) {
+                try { v.pause(); v.removeAttribute('src'); v.srcObject = null; v.load(); } catch (e) { }
+            }
+        }
+
+        // ── Dispatcher đa protocol ─────────────────────────────────────────
+        // Chọn player theo scheme/đuôi URL: webrtc:// → LEB; .m3u8 → HLS; .mp4 → native; còn lại → FLV.
+        // Bỏ query (?token=...) trước khi dò đuôi để không trượt khi url có query.
+        function detectType(src) {
+            if (!src) return 'none';
+            if (src.indexOf('webrtc://') === 0) return 'webrtc';
+            var path = src.split('?')[0].split('#')[0].toLowerCase();
+            if (path.indexOf('.m3u8') !== -1) return 'hls';
+            if (path.indexOf('.mp4') !== -1) return 'mp4'; // phòng SYSTEM: video dựng sẵn
+            return 'flv'; // .flv / http-flv mặc định
+        }
+
+        function attachPlayer(video, src) {
+            currentFlvSrc = src; // dùng để reconnect khi mất mạng / resume
+            var type = detectType(src);
+            console.log('[player] type=', type, ' src=', src);
+            // Nguồn mới = phải báo lại khung hình. Đặt lại Ở ĐÂY chứ không trong `buildSlide`: đổi
+            // tập phim ngắn KHÔNG qua `buildSlide` mà gọi thẳng hàm này trên thẻ <video> cũ, cùng lý
+            // do `_nativeUnlockTries` cũng phải đặt lại tay ở nhánh fallback của `LIST_VIDEO`.
+            _sizeReported = false;
+            // Báo Cocos biết nguồn hiện tại có phải VOD system không → bật/ẩn thanh tua.
+            postToCocos({ type: 'SYS_VIDEO', isSystem: !!currentIsSystem });
+            if (type === 'webrtc') return attachWebrtc(video, src);
+            if (type === 'hls') return attachHlsLive(video, src);
+            if (type === 'mp4') return attachMp4(video, src);
+            return attachFlv(video, src);
+        }
+
+        // ── MP4 (phòng SYSTEM) ─────────────────────────────────────────────
+        // Video dựng sẵn, KHÔNG phải live: gán src thẳng cho <video>.
+        // Phải destroy player live cũ trước, nếu không mpegts/hls còn attach sẽ nuốt src.
+        function attachMp4(video, src) {
+            destroyFlv();
+            destroyHls();
+            try { video.disableRemotePlayback = true; } catch (e) { }
+            video.loop = currentLoop;   // mp4 luôn là video system, nhưng tập phim ngắn thì KHÔNG lặp
+            video.src = src;
+            video.load();
+            tryPlay(video);
+        }
+
+        // ── HLS (hls.js + native Safari) ───────────────────────────────────
+        var currentHls = null;
+        function attachHlsLive(video, src) {
+            destroyFlv();
+            destroyHls(); // HLS cũ CÒN attach vào cùng thẻ <video> → HLS mới xung đột, video thứ 2
+            //               (m3u8→m3u8) không phát. Phải huỷ trước khi tạo instance mới.
+            // .m3u8 có thể là LIVE (Tencent) hoặc VOD system → dựa cờ isSystem từ Cocos, không đoán URL.
+            video.loop = currentIsSystem && currentLoop;
+            try { video.disableRemotePlayback = true; } catch (e) { }
+            var canNative = video.canPlayType('application/vnd.apple.mpegurl') !== '';
+            console.log('[HLS] hlsjs=', !!(window.Hls && Hls.isSupported()), ' native=', canNative);
+            if (window.Hls && Hls.isSupported()) {
+                // VOD system (video dựng sẵn, có thanh tua) và LIVE cần config khác nhau:
+                // - LIVE: bám mép sóng, độ trễ thấp, giữ back-buffer nhỏ cho nhẹ.
+                // - VOD : KHÔNG lowLatency (không phải luồng trực tiếp); GIỮ back-buffer lớn để tua LÙI
+                //         không phải tải lại segment; buffer xuôi rộng cho phát mượt/tua tới nhanh.
+                var hlsCfg = currentIsSystem
+                    ? { lowLatencyMode: false, backBufferLength: Infinity, maxBufferLength: 60 }
+                    : { liveSyncDurationCount: 3, lowLatencyMode: true, backBufferLength: 10 };
+                currentHls = new Hls(hlsCfg);
+                currentHls.on(Hls.Events.ERROR, function (ev, data) {
+                    console.log('[HLS ERROR]', data.type, data.details, 'fatal=' + data.fatal);
+                    if (!data.fatal) return;
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR) currentHls.startLoad();
+                    else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) currentHls.recoverMediaError();
+                    else { destroyHls(); if (canNative) { video.src = src; tryPlay(video); } }
+                });
+                currentHls.loadSource(src);
+                currentHls.attachMedia(video);
+                // Thử phát CÓ TIẾNG trước (thẻ <video> tạo sẵn muted → phải gán lại), chặn thì fallback muted.
+                video.muted = isMuted;
+                var pp = video.play();
+                if (pp && pp.catch) pp.catch(function () { video.muted = true; isMuted = true; _audioUnlocked = false; video.play().catch(function () { }); });
+            } else if (canNative) {
+                // iOS Safari / native HLS
+                video.src = src;
+                video.muted = isMuted;
+                video.addEventListener('error', function () {
+                    console.log('[NATIVE HLS ERROR] code=', video.error && video.error.code);
+                }, { once: true });
+                tryPlay(video);
+            } else {
+                console.log('[HLS] trình duyệt không hỗ trợ HLS');
+            }
+        }
+        function destroyHls() {
+            if (currentHls) { try { currentHls.destroy(); } catch (e) { } currentHls = null; }
+        }
+
+        // ── WebRTC / Tencent LEB (độ trễ <1s) ──────────────────────────────
+        // Cần nạp Tencent Web LEB SDK (xem <head>). Đây là khung tích hợp — API theo SDK bạn dùng.
+        var currentRtc = null;
+        function attachWebrtc(video, src) {
+            destroyFlv();
+            if (typeof window.TXLivePlayer !== 'undefined') {
+                try {
+                    currentRtc = new window.TXLivePlayer();
+                    currentRtc.setPlayerView && currentRtc.setPlayerView(video);
+                    currentRtc.startPlay(src);
+                    tryPlay(video);
+                } catch (e) { console.warn('[webrtc] khởi tạo lỗi:', e); }
+            } else {
+                console.warn('[webrtc] Chưa nạp Tencent Web LEB SDK — bỏ qua. Dùng nguồn flv/hls hoặc tích hợp SDK.');
+            }
+        }
+        function destroyWebrtc() {
+            if (currentRtc) { try { currentRtc.stopPlay && currentRtc.stopPlay(); } catch (e) { } currentRtc = null; }
+        }
+
+        /* ===== HLS cũ — tạm tắt, đã chuyển sang FLV (attachFlv/refreshFlvSrc/destroyFlv) =====
+        function attachHls(video, src) {
+            if (currentHls) { currentHls.destroy(); currentHls = null; }
+            latestPlaylistQuery = extractQuery(src);
+
+            // iOS Safari: Hls.isSupported() = false → dùng native HLS.
+            // Một số Android WebView báo isSupported nhưng MSE lỗi → nếu có native HLS thì ưu tiên cũng OK.
+            var canNative = video.canPlayType('application/vnd.apple.mpegurl') !== '';
+            dbg('attachHls supported=' + (window.Hls && Hls.isSupported()) + ' native=' + canNative);
+            dbg('src=' + src);
+
+            if (window.Hls && Hls.isSupported()) {
+                var DefaultLoader = Hls.DefaultConfig.loader;
+                currentHls = new Hls({
+                    liveSyncDurationCount: 3,
+                    // pLoader: với mọi request .m3u8, thay query bằng token mới nhất.
+                    // Giữ nguyên path → hoạt động cả với master lẫn media playlist.
+                    // Segment .ts không bị đụng tới (auth riêng qua txspiseq).
+                    pLoader: function (config) {
+                        var loader = new DefaultLoader(config);
+                        var origLoad = loader.load.bind(loader);
+                        loader.load = function (context, cfg, callbacks) {
+                            if (context.url && context.url.indexOf('.m3u8') !== -1) {
+                                context.url = context.url.split('?')[0] + latestPlaylistQuery;
+                            }
+                            origLoad(context, cfg, callbacks);
+                        };
+                        return loader;
+                    }
+                });
+                currentHls.on(Hls.Events.MANIFEST_LOADED, function () { dbg('MANIFEST_LOADED'); });
+                currentHls.on(Hls.Events.MANIFEST_PARSED, function () { dbg('MANIFEST_PARSED'); });
+                currentHls.on(Hls.Events.LEVEL_LOADED, function () { dbg('LEVEL_LOADED'); });
+                currentHls.on(Hls.Events.FRAG_LOADED, function () { dbg('FRAG_LOADED'); });
+                currentHls.on(Hls.Events.ERROR, function (event, data) {
+                    dbg('HLS ERROR ' + data.type + ' / ' + data.details + ' fatal=' + data.fatal +
+                        (data.response ? ' code=' + data.response.code : ''));
+                    console.log('[HLS ERROR]', data.type, data.details, 'fatal=' + data.fatal);
+                    if (!data.fatal) return;
+                    // Lỗi nặng → thử recover thay vì chết im lặng (rất hay gặp trên mạng mobile)
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                        currentHls.startLoad();
+                    } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                        currentHls.recoverMediaError();
+                    } else {
+                        // Không recover được → fallback native nếu máy hỗ trợ
+                        currentHls.destroy();
+                        currentHls = null;
+                        if (canNative) video.src = src;
+                    }
+                });
+                currentHls.loadSource(src);
+                currentHls.attachMedia(video);
+            } else if (canNative) {
+                // iOS Safari / native HLS
+                dbg('dùng native HLS');
+                video.src = src;
+                video.addEventListener('loadedmetadata', function () { dbg('native loadedmetadata'); }, { once: true });
+                video.addEventListener('error', function () {
+                    dbg('NATIVE HLS ERROR code=' + (video.error && video.error.code));
+                    console.log('[NATIVE HLS ERROR]', video.error && video.error.code, src);
+                }, { once: true });
+            } else {
+                dbg('Trình duyệt KHÔNG hỗ trợ HLS');
+                console.log('[HLS] Không hỗ trợ phát HLS trên trình duyệt này');
+            }
+        }
+
+        function refreshHlsSrc(newSrc) {
+            if (!currentHls) return false;
+            // Chỉ cập nhật token — KHÔNG đụng HLS instance, KHÔNG loadSource.
+            // pLoader tự dùng token mới ở lần poll playlist kế tiếp (~vài giây).
+            latestPlaylistQuery = extractQuery(newSrc);
+            return true;
+        }
+
+        function destroyHls() {
+            if (currentHls) { currentHls.destroy(); currentHls = null; }
+            latestPlaylistQuery = '';
+        }
+        ===== hết phần HLS cũ ===== */
+
+        // ── Blur overlay (paywall / preview expired) ──────────────────────
+        var blurOverlay = null;
+        var blurBgImg = null; // ảnh idol demo nằm DƯỚI lớp blur
+        var BLUR_IMG_SRC = 'src/images/idol_demo.png';
+        // Preload sẵn để showBlur hiện ngay, không phải đợi tải ảnh
+        (function () { var p = new Image(); p.src = BLUR_IMG_SRC; })();
+
+        function showBlur() {
+            // Nếu blur hiện sau khi vừa vuốt vào phòng khoá → slide đang kẹt ngoài màn
+            // (translateY(-H)) vì slideInNewVideo không chạy. Kéo về 0 + reset trạng thái swipe.
+            var s = getSlide();
+            if (s) {
+                setPosition(0, false);
+                pendingDirection = 0;
+                isAnimating = false;
+            }
+            // Ảnh nền idol demo (z-index 4 < blur 5) → nằm dưới lớp mờ
+            if (!blurBgImg) {
+                blurBgImg = document.createElement('img');
+                blurBgImg.src = BLUR_IMG_SRC;
+                blurBgImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:4;transition:opacity 0.3s;';
+            }
+            if (!blurOverlay) {
+                blurOverlay = document.createElement('div');
+                blurOverlay.style.cssText = 'position:absolute;inset:0;z-index:5;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(0,0,0,0.5);transition:opacity 0.3s;';
+            }
+            blurBgImg.style.opacity = '0';
+            blurOverlay.style.opacity = '0';
+            // Gắn vào slide nếu có (để trượt theo khi kéo); fallback feed khi chưa có slide (vd phòng khoá)
+            var parent = getSlide() || feed;
+            parent.appendChild(blurBgImg);
+            parent.appendChild(blurOverlay);
+            var vid = getVideo();
+            if (vid) vid.pause();
+            // Force reflow để transition opacity chạy ngay — không phụ thuộc rAF
+            // (rAF có thể bị throttle trong iframe khi chưa có tương tác → blur chỉ hiện sau khi click)
+            void blurOverlay.offsetWidth;
+            blurBgImg.style.opacity = '1';
+            blurOverlay.style.opacity = '1';
+        }
+
+        function hideBlur() {
+            if (blurOverlay && blurOverlay.parentNode) {
+                blurOverlay.style.opacity = '0';
+                setTimeout(function () {
+                    if (blurOverlay && blurOverlay.parentNode) blurOverlay.parentNode.removeChild(blurOverlay);
+                }, 300);
+            }
+            if (blurBgImg && blurBgImg.parentNode) {
+                blurBgImg.style.opacity = '0';
+                setTimeout(function () {
+                    if (blurBgImg && blurBgImg.parentNode) blurBgImg.parentNode.removeChild(blurBgImg);
+                }, 300);
+            }
+        }
+
+        // Xoá sạch slide hiện tại → feed về trống (slide off-screen kẹt sau goTo sẽ bị bỏ)
+        function resetSlide() {
+            hideBlur();
+            destroyFlv();
+            var v = getVideo();
+            if (v) { try { v.pause(); } catch (e) { } v.src = ''; }
+            feed.innerHTML = '';
+            pendingDirection = 0;
+            isAnimating = false;
+            currentSrc = '';
+        }
+
+        // ── Khởi tạo slide khi nhận video đầu tiên ───────────────────────
+        function buildSlide(src) {
+            // Nguồn mới = quota thử bật tiếng mới. Không đặt lại thì xem tới tập thứ sáu là hết lượt
+            // và tập đó câm dù năm tập trước chỉ hỏng vì lý do nhất thời.
+            _nativeUnlockTries = 0;
+            feed.innerHTML = '';
+            var slide = document.createElement('div');
+            slide.className = 'video-slide';
+            slide.innerHTML = '<div class="loading visible"><div class="spinner"></div></div>' +
+                '<video playsinline muted preload="auto"></video>';
+
+            var video = slide.querySelector('video');
+            var loading = slide.querySelector('.loading');
+
+            function hideLoading() {
+                loading.classList.add('hiding');
+                setTimeout(function () { loading.classList.remove('visible', 'hiding'); }, 300);
+            }
+
+            // ── Báo KHUNG HÌNH thật của video cho Cocos ────────────────────
+            //
+            // Cocos cần `w`/`h` để biết video dọc hay ngang — chỉ video ngang mới hiện nút xem toàn
+            // màn hình, và Cocos còn dùng hai số này tính dải đen để đặt nút cho khỏi đè lên hình.
+            // Không có chúng thì nút xoay KHÔNG BAO GIỜ hiện.
+            //
+            // `applyFitMode` thì KHÔNG còn cần: từ 15/09 VOD luôn `contain`.
+            //
+            // 🔴 Gửi ở `loadedmetadata` là KHÔNG ĐỦ. HLS và FLV đi qua MSE: sự kiện đó bắn lúc
+            // MediaSource sẵn sàng nhưng CHƯA giải mã khung nào, nên `videoWidth` vẫn là 0. Phim ngắn
+            // do MediaStorageService tách ra đúng là HLS (`index.m3u8`) nên rơi thẳng vào ca này.
+            //
+            // Gọi từ HAI nguồn cho chắc, và chỉ gửi MỘT lần nhờ cờ dưới đây:
+            //   · `resize`     — sự kiện chuẩn, bắn đúng lúc videoWidth/videoHeight đổi (kể cả 0→thật)
+            //   · `timeupdate` — vốn đã bắn liên tục lúc phát; là lưới đỡ phòng khi `resize` không tới
+            //
+            // 🔴 Cờ `_sizeReported` nằm NGOÀI hàm này và được đặt lại trong `attachPlayer`.
+            //
+            // Bản đầu tôi để cờ trong `buildSlide` với lý do "đổi tập là dựng slide mới nên cờ tự về
+            // false". SAI: đổi tập phim ngắn KHÔNG qua `buildSlide` — nó đi nhánh fallback ở cuối
+            // `LIST_VIDEO`, gọi thẳng `attachPlayer` trên thẻ <video> CŨ (xem chú thích ở đó, cũng là
+            // lý do `_nativeUnlockTries` phải đặt lại tay tại đúng chỗ ấy). Hậu quả: từ tập thứ hai
+            // trở đi cờ vẫn true nên khung hình không bao giờ được báo lại — tập ngang sau tập dọc
+            // vẫn bị coi là dọc.
+            video.addEventListener('canplay', function () {
+
+                hideLoading(); tryPlay(video);
+            });
+            // flv.js nhiều khi không bắn canplay → ẩn spinner khi video thật sự chạy
+            video.addEventListener('playing', function () {
+                // dbg('playing');
+                hideLoading();
+                // Đang phát mà muted (mobile chặn autoplay có tiếng):
+                //  - Native: WebView cho phép phát có tiếng không cần gesture → tự bật tiếng, không hiện icon.
+                //  - Web:    hiện icon "chạm để mở tiếng" để user tap.
+                if (video.muted && !_audioUnlocked) {
+                    if (_isNativeApp) unlockAudio();
+                    else showMuteHint();
+                } else hideMuteHint();
+            });
+            video.addEventListener('volumechange', function () {
+                if (!video.muted) hideMuteHint();
+            });
+
+            // ── Báo Cocos trạng thái phát/dừng THẬT ────────────────────────
+            //
+            // Nút tạm dừng bên Cocos trước đây tự nhớ trạng thái bằng một cờ riêng. Cờ đó desync
+            // ngay ở ca đầu tiên: tua (`SYS_VIDEO_SEEK`) luôn gọi `play()`, nên bấm lùi 10s trong
+            // lúc đang dừng thì video CHẠY TIẾP mà nút vẫn vẽ biểu tượng "phát".
+            //
+            // Nguồn sự thật phải là thẻ <video>, không phải trí nhớ của Cocos: nó còn tự đổi trạng
+            // thái ở nhiều chỗ khác — hết video, trình duyệt chặn autoplay, mất mạng giữa chừng.
+            // Hai sự kiện này là chỗ duy nhất biết chắc.
+            video.addEventListener('play', function () {
+                if (currentIsSystem) postToCocos({ type: 'SYS_VIDEO_PLAYSTATE', paused: false });
+            });
+            video.addEventListener('pause', function () {
+                if (currentIsSystem) postToCocos({ type: 'SYS_VIDEO_PLAYSTATE', paused: true });
+            });
+            /**
+             * Hết video → báo Cocos để tự sang tập kế.
+             *
+             * Chỉ bắn khi `loop` tắt; `loop` bật thì trình duyệt quay lại đầu và KHÔNG có `ended` nào
+             * cả — đó chính là lý do tường idol không bị ảnh hưởng.
+             *
+             * KHÔNG tự phát tập kế ở đây: trang này không biết bộ phim có bao nhiêu tập, tập sau có
+             * khoá VIP không, hay có phải lưu tiến độ không. Cocos giữ hết những thứ đó.
+             *
+             * Hết video thì `paused` của thẻ <video> vẫn là `false` và KHÔNG có sự kiện `pause` —
+             * nên nút phát/dừng bên Cocos không bị nháy sang biểu tượng "phát" trước khi tập sau chạy.
+             */
+            video.addEventListener('ended', function () {
+                if (currentIsSystem) postToCocos({ type: 'SYS_VIDEO_ENDED' });
+            });
+            video.addEventListener('loadeddata', function () {
+                //  dbg('loadeddata');
+                hideLoading();
+            });
+            // Chắc ăn nhất: khi currentTime nhích lên = đang phát thật → ẩn spinner
+            video.addEventListener('timeupdate', function () {
+                if (video.currentTime > 0) hideLoading();
+                // VOD system → báo tiến độ cho Cocos cập nhật thanh tua (live thì bỏ qua).
+                if (currentIsSystem) postToCocos({ type: 'SYS_VIDEO_PROGRESS', cur: video.currentTime, dur: video.duration || 0 });
+                // Lưới đỡ cho khung hình: tới đây là video CHẮC CHẮN đã giải mã khung, nên
+                // `videoWidth` phải có số. Tự bỏ qua sau lần gửi đầu.
+                reportVideoSize(video, 'timeupdate');
+            });
+            // Có duration sớm → báo Cocos để hiện tổng thời gian ngay.
+            //
+            // Gửi kèm KÍCH THƯỚC THẬT của video. Cocos cần nó để biết video dọc hay ngang: dọc thì
+            // phủ kín màn như cũ, ngang thì thu về đúng tỷ lệ và hiện nút xem toàn màn hình. Không
+            // có hai số này thì Cocos phải đoán từ URL — mà URL không nói gì về khung hình.
+            video.addEventListener('loadedmetadata', function () {
+                applyFitMode(video);
+                if (currentIsSystem) {
+                    // Gói này chủ yếu để báo THỜI LƯỢNG (Cocos cần nó bật thanh tua) — `w`/`h` ở đây
+                    // có thể vẫn là 0 với HLS/FLV, và đó là bình thường.
+                    postToCocos({
+                        type: 'SYS_VIDEO', isSystem: true, dur: video.duration || 0,
+                        w: video.videoWidth || 0, h: video.videoHeight || 0,
+                    });
+                }
+                // mp4 phát thẳng thì đã có khung hình ngay tại đây — chốt luôn, khỏi đợi `resize`.
+                reportVideoSize(video, 'loadedmetadata');
+            });
+            // Khung hình đổi (kể cả lần đầu 0 → số thật) — xem [reportVideoSize].
+            video.addEventListener('resize', function () { reportVideoSize(video, 'resize'); });
+            video.addEventListener('waiting', function () {
+                //  dbg('waiting (buffering)');
+            });
+            video.addEventListener('stalled', function () {
+                // dbg('stalled');
+            });
+            // FLV live vào GIỮA stream → timestamp lớn, buffer nằm ở [ts, ...] còn currentTime=0
+            // → playhead ngoài buffer → kẹt mãi dù tải data. Nhảy playhead vào đầu buffer để phát.
+            function jumpIntoBuffer() {
+                try {
+                    var b = video.buffered;
+                    if (b && b.length > 0) {
+                        var bs = b.start(0);
+                        var be = b.end(b.length - 1);
+                        if (video.currentTime < bs - 0.1 || video.currentTime > be) {
+                            console.log('[FLV] seek playhead', video.currentTime, '→', bs);
+                            video.currentTime = bs;
+                            tryPlay(video);
+                        }
+                    }
+                } catch (e) { }
+            }
+            video.addEventListener('progress', jumpIntoBuffer);
+            video.addEventListener('durationchange', jumpIntoBuffer);
+            video.addEventListener('loadedmetadata', jumpIntoBuffer);
+
+            slide.addEventListener('click', function () {
+                if (dragMoved) return;
+                togglePause();
+            });
+
+            feed.appendChild(slide);
+            currentSrc = src;
+            attachPlayer(video, src);
+        }
+
+        // ── Swipe đi: animate slide ra khỏi màn hình ─────────────────────
+        function goTo(direction) {
+            if (!canSwipe) { snapBack(); return; }
+            isAnimating = true;
+            isPaused = false;
+            pendingDirection = direction;
+
+            var H = getVH();
+            // direction=+1 (swipe up/next): slide bay lên trên (-H)
+            // direction=-1 (swipe down/prev): slide bay xuống dưới (+H)
+            setPosition(-direction * H, true);
+
+            // Hiện spinner sau khi slide ra khỏi màn
+            setTimeout(function () {
+                var loading = getLoading();
+                if (loading) loading.classList.add('visible');
+                isAnimating = false;
+            }, 380);
+        }
+
+        // ── Nhận video mới từ Cocos: animate slide vào ───────────────────
+        function slideInNewVideo(src, direction) {
+            var H = getVH();
+            var video = getVideo();
+            var loading = getLoading();
+
+            if (video) {
+                video.pause();
+                destroyFlv();
+                video.src = '';
+            }
+
+            // Ẩn loading nếu đang hiện
+            if (loading) loading.classList.remove('visible', 'hiding');
+
+            // Đặt vị trí ban đầu: đến từ phía đối diện hướng swipe
+            // swipe up (+1) → enter từ dưới lên (+H)
+            setPosition(direction * H, false);
+
+            if (video) {
+                video.muted = isMuted;
+                attachPlayer(video, src);
+            }
+
+            currentSrc = src;
+            pendingDirection = 0;
+
+            // Đợi 1 frame để browser biết vị trí ban đầu, rồi animate vào giữa
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    setPosition(0, true);
+                    setTimeout(function () {
+                        isAnimating = false;
+                        tryPlay(getVideo());
+                    }, 400);
+                });
+            });
+        }
+
+        // ── Mouse wheel ───────────────────────────────────────────────────
+        window.addEventListener('wheel', function (e) {
+            e.preventDefault();
+            if (isAnimating) return;
+            wheelAccum += e.deltaY;
+            clearTimeout(wheelTimer);
+            wheelTimer = setTimeout(function () {
+                if (Math.abs(wheelAccum) > 30) goTo(wheelAccum > 0 ? 1 : -1);
+                wheelAccum = 0;
+            }, 80);
+        }, { passive: false });
+
+        // ── Touch swipe ───────────────────────────────────────────────────
+        window.addEventListener('touchstart', function (e) {
+            if (isAnimating) return;
+            touchStartY = e.touches[0].clientY;
+            touchStartT = Date.now();
+            isDragging = true;
+            dragMoved = false;
+        }, { passive: true });
+
+        window.addEventListener('touchmove', function (e) {
+            if (!isDragging) return;
+            var dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dy) > 5) dragMoved = true;
+
+            var offset = canSwipe ? dy : dy * 0.18;
+            setPosition(offset, false);
+            if (e.cancelable) e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchend', function (e) {
+            if (!isDragging) return;
+            isDragging = false;
+            if (!dragMoved) return;
+
+            var dy = touchStartY - e.changedTouches[0].clientY;
+            var dt = Date.now() - touchStartT;
+            var velocity = Math.abs(dy) / dt;
+            var H = getVH();
+
+            if (dy > H * 0.2 || (velocity > 0.4 && dy > 20)) goTo(1);
+            else if (dy < -H * 0.2 || (velocity > 0.4 && dy < -20)) goTo(-1);
+            else snapBack();
+        }, { passive: true });
+
+        // ── Keyboard ──────────────────────────────────────────────────────
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goTo(1);
+            if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') goTo(-1);
+            if (e.key === ' ') { e.preventDefault(); togglePause(); }
+        });
+
+        // ── Nhận event từ Cocos ──────────────────────────────────────────
+        window.addEventListener('message', function (e) {
+            if (!e.data) return;
+
+            if (e.data.type === 'SHOW_BLUR') { showBlur(); return; }
+            if (e.data.type === 'HIDE_BLUR') { hideBlur(); return; }
+
+            if (e.data.type === 'PAUSE') { pauseStream(); return; }
+            if (e.data.type === 'PLAY') { playStream(); return; }
+
+            // Chạm bất kỳ (kể cả trúng UI/nút) → thử mở tiếng nếu đang muted. Độc lập với ccSwipeEnd
+            // để không bị bỏ lỡ khi tap vào vùng có nút. Đã mở tiếng rồi thì bỏ qua.
+            if (e.data.type === 'ccUnmute') { if (!_audioUnlocked) unlockAudio(); return; }
+
+            // Tua VOD system: Cocos gửi fraction (0–1) → nhảy playhead. Chỉ áp cho VOD (có duration hữu hạn).
+            if (e.data.type === 'SYS_VIDEO_SEEK') {
+                var vSeek = getVideo();
+                if (vSeek && isFinite(vSeek.duration) && vSeek.duration > 0) {
+                    try { vSeek.currentTime = Math.max(0, Math.min(1, e.data.fraction)) * vSeek.duration; vSeek.play().catch(function () { }); } catch (e2) { }
+                }
+                return;
+            }
+
+            // Thoát live: đóng mpegts + nhả ManagedMediaSource ngay (không đợi iframe bị gỡ)
+            // → vào lại lần sau không bị kẹt MMS cũ → hết "load hoài".
+            if (e.data.type === 'DESTROY') { destroyFlv(); currentFlvSrc = ''; currentSrc = ''; return; }
+
+            // Xoá sạch slide (vd kéo sang phòng khoá/offline → slide cũ kẹt ngoài màn).
+            // Sau RESET, LIST_VIDEO kế tiếp sẽ build slide mới ở vị trí 0.
+            if (e.data.type === 'RESET_SLIDE') { resetSlide(); return; }
+
+            if (e.data.type === 'LIST_VIDEO') {
+                var videos = e.data.videos || [];
+                var isUpdate = e.data.isUpdate;
+                var refreshCurrent = e.data.refreshCurrent;
+                if (e.data.canSwipe !== undefined) canSwipe = e.data.canSwipe;
+
+                if (!videos[0]) return;
+                currentIsSystem = !!videos[0].isSystem; // phòng system → attachPlayer sẽ cho loop
+                // `!== false` chứ không `!!`: thiếu trường = lặp như cũ. Dùng `!!` là mọi nơi gọi cũ
+                // (tường idol, VodScreen) im lặng mất tính năng lặp.
+                currentLoop = videos[0].loop !== false;
+                // URL bị HTML-encode (&amp; thay vì &) → token txTime hỏng → stream kẹt buffer. Decode lại.
+                if (videos[0].src) videos[0].src = decodeUrl(videos[0].src);
+
+                if (!isUpdate) {
+                    // Lần đầu load: build slide
+                    buildSlide(videos[0].src);
+                    return;
+                }
+
+                // Chưa có slide (vd phòng đầu bị khoá nên chưa build) → build mới
+                if (!getSlide()) {
+                    pendingDirection = 0;
+                    buildSlide(videos[0].src);
+                    return;
+                }
+
+                if (refreshCurrent) {
+                    var newSrc = videos[0].src;
+
+                    // Unlock (hardReload): preview có thể đã đứng hình / đóng kết nối →
+                    // BẮT BUỘC tạo lại player sạch, kể cả khi src trùng. Khác token-refresh (mượt).
+                    if (e.data.hardReload) {
+                        currentSrc = newSrc;
+                        currentFlvSrc = newSrc;
+                        var curV = getVideo();
+                        if (curV) { destroyFlv(); attachPlayer(curV, newSrc); tryPlay(curV); }
+                        else buildSlide(newSrc);
+                        return;
+                    }
+
+                    if (currentSrc === newSrc) return;
+                    currentSrc = newSrc;
+
+                    // FLV: không đổi url trực tiếp → refreshFlvSrc tạo lại player với token mới
+                    refreshFlvSrc(newSrc);
+                    /* HLS cũ — tạm tắt:
+                    if (refreshHlsSrc(newSrc)) {
+                        // HLS.js: fetch manifest mới rồi tiếp tục từ currentTime
+                    } else {
+                        // Safari native HLS: phải set lại src → dùng blur để che
+                        var cur = getVideo();
+                        if (!cur) return;
+                        showBlur();
+                        cur.src = newSrc;
+                        cur.muted = isMuted;
+                        cur.addEventListener('canplay', function onReady() {
+                            cur.removeEventListener('canplay', onReady);
+                            if (cur.seekable && cur.seekable.length > 0) {
+                                cur.currentTime = cur.seekable.end(cur.seekable.length - 1);
+                            }
+                            cur.play().catch(function () { });
+                            hideBlur();
+                        }, { once: true });
+                    }
+                    */
+                    return;
+                }
+
+                // Video mới sau khi swipe
+                if (pendingDirection !== 0) {
+                    slideInNewVideo(videos[0].src, pendingDirection);
+                } else {
+                    // Fallback (đổi phòng KHÔNG qua swipe, vd nút Huỷ paywall):
+                    // PHẢI destroy player cũ trước — gán src thẳng khi mpegts còn attach
+                    // → SourceBuffer bị gỡ trong khi player cũ vẫn đọc buffered → spam
+                    // InvalidStateError, và FLV cũng không phát được bằng src trực tiếp.
+                    var cur2 = getVideo();
+                    if (currentSrc !== videos[0].src) {
+                        currentSrc = videos[0].src;
+                        // Đổi nguồn mà KHÔNG qua buildSlide (đổi tập phim ngắn đi đúng đường này) →
+                        // phải tự đặt lại quota, không thì hết lượt là các tập sau câm.
+                        _nativeUnlockTries = 0;
+                        if (cur2) {
+                            destroyFlv();
+                            cur2.muted = isMuted;
+                            attachPlayer(cur2, videos[0].src);
+                            tryPlay(cur2);
+                        } else {
+                            buildSlide(videos[0].src);
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (e.data.type === 'ccSwipeEnd' || e.data.type === 'ccDrag') {
+                dragMoved = true;
+                setTimeout(function () { dragMoved = false; }, 600);
+                if (!_audioUnlocked) {
+                    unlockAudio(); // chạm (qua Cocos) đã mở tiếng → unmute + đồng bộ live edge + ẩn icon
+                }
+            }
+
+            if (e.data.type === 'ccDrag') {
+                if (isAnimating) return;
+                var H = getVH();
+                var offset = canSwipe ? e.data.fraction * H : e.data.fraction * H * 0.18;
+                setPosition(offset, false);
+            } else if (e.data.type === 'ccSwipeEnd') {
+                var f = e.data.fraction;
+                var vel = e.data.velocity;
+                if (f > 0.2 || (vel > 0.35 && f > 0.03)) goTo(1);
+                else if (f < -0.2 || (vel > 0.35 && f < -0.03)) goTo(-1);
+                else snapBack();
+            } else if (e.data.type === 'ccSwipe') {
+                goTo(e.data.direction === 'up' ? 1 : -1);
+            }
+        });
+
+        window.addEventListener('ccSwipe', function (e) {
+            goTo(e.detail.direction === 'up' ? 1 : -1);
+        });
+
+        // Ẩn/hiện trang (web + iOS WKWebView tự bắn) → pause/play.
+        // Android dựa vào Cocos forward PAUSE/PLAY (WebView không tự bắn khi app background).
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) pauseStream();
+            else playStream();
+        });
+
+        // Rời trang (Cocos destroy webview khi back) → đóng FLV sạch để CDN release kết nối cũ,
+        // vào lại lần sau không bị chờ/throttle vì connection treo.
+        window.addEventListener('pagehide', function () { destroyFlv(); });
+        window.addEventListener('beforeunload', function () { destroyFlv(); });
+    </script>
+</body>
+
+</html>

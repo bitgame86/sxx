@@ -1,0 +1,667 @@
+/* =========================================================
+   TIXGO – Landing page
+   Layout dựng theo file PSB: artboard WEB 1920px / MOBILE
+   Asset: phần khung–nền–nút–icon cut từ PSB,
+          logo/hero/thẻ danh mục/logo đối tác render mới cùng kích thước.
+   ========================================================= */
+
+:root {
+  --bg: #06030f;
+  --violet: #7c3aed;
+  --violet-l: #c084fc;
+  --gold: #fbbf24;
+  --txt: #e9e4f5;
+  --muted: #a99fc4;
+
+  --wrap: 1524px; /* 194 → 1718 trong PSB */
+  --stage: 1680px; /* 105 → 1785 trong PSB */
+
+  --display: 'Arial Black', 'Arial Bold', Arial, Helvetica, sans-serif;
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--body);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* =========================================================
+   LAYOUT CHUNG
+   ========================================================= */
+
+.page {
+  padding-bottom: 40px;
+}
+
+/* ============ HERO ============ */
+.hero {
+  position: relative;
+  padding-bottom: 40px;
+}
+.hero__bg {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1009px;
+  background: url('../assets/img/bg-city.jpg') center top/cover no-repeat;
+  z-index: 0;
+}
+.hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 3, 15, 0.15) 0%, rgba(6, 3, 15, 0.05) 45%, var(--bg) 100%);
+}
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--stage);
+  margin: 0 auto;
+  padding: 22px 20px 0;
+  display: grid;
+  gap: 0 24px;
+  grid-template-columns: 349px minmax(0, 1fr) 349px;
+  grid-template-areas:
+    'logo logo logo'
+    'head head head'
+    'sub  sub  sub'
+    'left stage right'
+    'cta  cta  cta'
+    'feat feat feat';
+  align-items: start;
+}
+
+/* logo */
+.logo {
+  grid-area: logo;
+  justify-self: center;
+  width: 284px;
+}
+.logo img {
+  width: 100%;
+}
+
+/* headline */
+.headline {
+  grid-area: head;
+  margin: 23px 0 0;
+  font-family: var(--display);
+  font-size: 44px;
+  line-height: 1.12;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    0 0 18px rgba(168, 85, 247, 0.75),
+    0 2px 6px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 22px;
+}
+.headline__accent {
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(251, 191, 36, 0.7);
+}
+.dot {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, var(--gold));
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.9);
+  flex: none;
+}
+
+/* subline */
+.subline {
+  grid-area: sub;
+  margin: 32px 0 0;
+  font-size: 26px;
+  text-align: center;
+  color: #efe9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.orn {
+  width: 85px;
+  height: 2px;
+  flex: none;
+  position: relative;
+  background: linear-gradient(90deg, transparent, var(--violet-l));
+}
+.orn--r {
+  background: linear-gradient(90deg, var(--violet-l), transparent);
+}
+.orn::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: var(--violet-l);
+  transform: rotate(45deg);
+}
+.orn--l::after {
+  right: 0;
+}
+.orn--r::after {
+  left: 0;
+}
+
+/* ============ PANEL (khung cut từ PSB) ============ */
+.panel {
+  background: url('../assets/img/card-frame.png') center/100% 100% no-repeat;
+  background-color: rgba(11, 5, 26, 0.55);
+  border-radius: 26px;
+  padding: 24px 22px;
+  backdrop-filter: blur(2px);
+}
+.panel--left {
+  grid-area: left;
+  margin-top: 26px;
+  min-height: 387px;
+}
+.panel--right {
+  grid-area: right;
+  min-height: 446px;
+}
+
+.panel__title_img {
+  width: auto;
+  height: 100%;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.panel__title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 1px;
+  text-align: center;
+  color: #fff;
+}
+.panel__rule {
+  display: block;
+  height: 2px;
+  margin: 16px 0 20px;
+  background: url('../assets/img/divider.png') center/100% 2px no-repeat;
+}
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  margin-bottom: 12px;
+  background: url('../assets/img/divider.png') bottom center/100% 2px no-repeat;
+}
+.panel__logo {
+  width: 180px;
+}
+.panel__head img:last-child {
+  width: 28px;
+  flex: none;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  background: url('../assets/img/divider.png') bottom center/100% 2px no-repeat;
+}
+.steps .step:last-child {
+  background: none;
+  padding-bottom: 0;
+}
+.badge {
+  flex: none;
+  width: 48px;
+  height: 55px;
+  background: url('../assets/img/badge-num.png') center/contain no-repeat;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 20px;
+  color: #fff;
+}
+.step__ic {
+  flex: none;
+  width: 46px;
+  height: auto;
+}
+.step__txt {
+  display: block;
+}
+.step__txt b {
+  display: block;
+  font-size: 17px;
+  color: #fff;
+  font-weight: 700;
+}
+.step__txt em {
+  display: block;
+  font-style: normal;
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.step__txt .hl {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+}
+.step__qr {
+  margin-left: auto;
+  width: 32px;
+  flex: none;
+}
+.panel__note {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+}
+.panel__note b {
+  color: var(--violet-l);
+}
+
+/* ============ HERO IMAGE ============ */
+.stage {
+  grid-area: stage;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.stage__img {
+  width: 100%;
+  max-width: 842px;
+}
+
+/* ============ CTA ============ */
+.cta {
+  grid-area: cta;
+  margin-top: 36px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 41px;
+}
+.btn {
+  width: 369px;
+  max-width: 100%;
+  height: 65px;
+  display: grid;
+  place-items: center;
+  background: center/100% 100% no-repeat;
+  font-family: var(--display);
+  font-size: 21px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #fff;
+  padding-left: 44px; /* chừa chỗ cho icon đã có sẵn trên nút */
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
+}
+.btn:hover,
+.btn:focus-visible {
+  transform: translateY(-3px);
+  filter: brightness(1.12);
+}
+.btn--purple {
+  background-image: url('../assets/img/btnPlayWeb.png');
+}
+.btn--blue {
+  background-image: url('../assets/img/btn-ios.png');
+}
+.btn--gold {
+  background-image: url('../assets/img/btn-android.png');
+  color: #ffe9a8;
+  text-shadow:
+    0 0 12px rgba(251, 191, 36, 0.7),
+    0 2px 4px rgba(0, 0, 0, 0.75);
+}
+
+/* ============ 4 THẺ DANH MỤC ============ */
+.features {
+  grid-area: feat;
+  margin-top: 41px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 11px;
+  max-width: var(--wrap);
+  width: 100%;
+  justify-self: center;
+}
+.feat {
+  position: relative;
+  container-type: inline-size;
+}
+.feat img {
+  width: 100%;
+}
+.feat__txt {
+  position: absolute;
+  left: 21%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 54%;
+}
+/* cỡ chữ theo bề rộng thẻ => giữ đúng tỉ lệ như trong PSB ở mọi màn hình */
+.feat__txt h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 4.1cqw;
+  letter-spacing: 0.02em;
+  color: #fff;
+  line-height: 1.2;
+}
+.feat__txt p {
+  margin: 0.5cqw 0 0;
+  font-size: 3.2cqw;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ============ NỘI DUNG ============ */
+.content {
+  padding: 52px 20px 0;
+}
+.wrap {
+  max-width: var(--wrap);
+  margin: 0 auto;
+}
+.content__title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 27px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+}
+.content__desc {
+  margin: 24px 0 0;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--muted);
+  text-align: justify;
+}
+
+.brands {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.brands img {
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+  opacity: 0.85;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.brands img:hover {
+  opacity: 1;
+  transform: translateY(-3px);
+}
+
+/* ============ TẢI APP ============ */
+.downloads {
+  padding: 80px 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 33px;
+}
+
+.foot {
+  padding: 64px 20px 40px;
+  text-align: center;
+  color: #6f6690;
+  font-size: 13px;
+}
+
+/* =========================================================
+   MOBILE – theo artboard MOBILE của PSB
+   (hero → CTA → 4 thẻ → 2 panel cạnh nhau → nội dung)
+   ========================================================= */
+@media (max-width: 1180px) {
+  .hero__inner {
+    grid-template-columns: 300px minmax(0, 1fr) 300px;
+    gap: 0 16px;
+  }
+  .headline {
+    font-size: 36px;
+    gap: 0 16px;
+  }
+  .subline {
+    font-size: 22px;
+  }
+  .cta {
+    gap: 24px;
+  }
+  .btn {
+    width: 320px;
+    font-size: 18px;
+    padding-left: 38px;
+  }
+  .content__title {
+    font-size: 23px;
+  }
+  .brands {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding-bottom: 24px;
+  }
+  .hero__bg {
+    height: 560px;
+    background-image: url('../assets/img/bg-city-mobile.jpg');
+  }
+
+  .hero__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 12px;
+    grid-template-areas:
+      'logo  logo'
+      'head  head'
+      'sub   sub'
+      'stage stage'
+      'cta   cta'
+      'feat  feat'
+      'left  right';
+  }
+
+  .logo {
+    width: 200px;
+  }
+  .headline {
+    margin-top: 18px;
+    font-size: 29px;
+    gap: 0 14px;
+    flex-direction: column;
+  }
+  .headline .dot {
+    display: none;
+  }
+  .subline {
+    margin-top: 18px;
+    font-size: 17px;
+    gap: 12px;
+  }
+  .orn {
+    width: 56px;
+  }
+
+  .stage {
+    margin-top: 6px;
+  }
+
+  .cta {
+    margin-top: 22px;
+    gap: 12px;
+  }
+  .cta .btn {
+    width: calc(50% - 6px);
+    min-width: 0;
+    height: 52px;
+    font-size: 15px;
+    padding-left: 30px;
+  }
+  .cta .btn--purple {
+    order: 3;
+    width: min(320px, 100%);
+  }
+
+  .features {
+    margin-top: 26px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .panel--left,
+  .panel--right {
+    margin-top: 28px;
+    min-height: 0;
+  }
+  .panel {
+    padding: 18px 14px;
+    border-radius: 20px;
+  }
+  .panel__logo {
+    width: 130px;
+  }
+  .step {
+    gap: 10px;
+  }
+  .badge {
+    width: 38px;
+    height: 44px;
+    font-size: 16px;
+  }
+  .step__ic {
+    width: 34px;
+  }
+  .step__txt b {
+    font-size: 14px;
+  }
+  .step__txt em {
+    font-size: 12px;
+  }
+  .step__qr {
+    width: 24px;
+  }
+
+  .content {
+    padding-top: 36px;
+  }
+  .content__title {
+    font-size: 19px;
+  }
+  .content__desc {
+    margin-top: 18px;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  .brands {
+    margin-top: 34px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .downloads {
+    padding-top: 48px;
+    gap: 16px;
+  }
+  .downloads .btn {
+    width: min(320px, 100%);
+    height: 56px;
+    font-size: 16px;
+    padding-left: 34px;
+  }
+}
+
+@media (max-width: 520px) {
+  .headline {
+    font-size: 24px;
+  }
+  .subline {
+    font-size: 15px;
+  }
+  .orn {
+    width: 40px;
+  }
+  .cta .btn {
+    height: 46px;
+    font-size: 13px;
+    padding-left: 26px;
+  }
+  .content__title {
+    font-size: 17px;
+  }
+  .hero__inner {
+    grid-template-areas:
+      'logo  logo'
+      'head  head'
+      'sub   sub'
+      'stage stage'
+      'cta   cta'
+      'feat  feat'
+      'left  left'
+      'right right';
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

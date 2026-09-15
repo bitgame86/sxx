@@ -1,0 +1,76 @@
+
+TaiXiu.png
+size: 888,480
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: true
+  xy: 594, 97
+  size: 135, 179
+  orig: 137, 181
+  offset: 1, 1
+  index: -1
+b
+  rotate: false
+  xy: 594, 234
+  size: 226, 244
+  orig: 228, 246
+  offset: 1, 1
+  index: -1
+bg1
+  rotate: false
+  xy: 2, 13
+  size: 320, 465
+  orig: 320, 465
+  offset: 0, 0
+  index: -1
+so
+  rotate: false
+  xy: 324, 77
+  size: 268, 401
+  orig: 268, 401
+  offset: 0, 0
+  index: -1
+ta1
+  rotate: false
+  xy: 324, 2
+  size: 129, 73
+  orig: 131, 75
+  offset: 1, 1
+  index: -1
+ta2
+  rotate: true
+  xy: 822, 290
+  size: 188, 64
+  orig: 190, 66
+  offset: 1, 1
+  index: -1
+tai
+  rotate: false
+  xy: 714, 9
+  size: 114, 86
+  orig: 114, 86
+  offset: 0, 0
+  index: -1
+tb1
+  rotate: false
+  xy: 594, 15
+  size: 118, 80
+  orig: 120, 82
+  offset: 1, 1
+  index: -1
+tb2
+  rotate: false
+  xy: 455, 4
+  size: 114, 71
+  orig: 116, 73
+  offset: 1, 1
+  index: -1
+xiu
+  rotate: true
+  xy: 775, 103
+  size: 129, 91
+  orig: 129, 91
+  offset: 0, 0
+  index: -1

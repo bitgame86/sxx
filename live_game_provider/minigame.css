@@ -1,0 +1,3204 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   FONT CHỮ CỦA BẢN GỐC
+
+   Hai file .ttf nằm sẵn trong assets/dice_mini/font/. `rg` là bản thường, `bd` là bản đậm —
+   dùng làm hai họ RIÊNG chứ không phải một họ với hai độ đậm: đặt cùng tên rồi phân biệt bằng
+   font-weight thì trình duyệt có thể tự làm đậm giả bản thường thay vì lấy file bd.
+
+   font-display: swap — chữ hiện ngay bằng font hệ thống rồi đổi sang font này khi tải xong,
+   thay vì để trống chờ. Trên mạng chậm khỏi thấy khoảng trắng.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+@font-face {
+  font-family: 'ForgottenFuturist';
+  src: url('./assets/dice_mini/font/forgottenfuturistrg.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ForgottenFuturistBd';
+  src: url('./assets/dice_mini/font/forgottenfuturistbd.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   MINIGAME — Tài Xỉu (DiceMini)
+   Tách khỏi style.css: đây là việc riêng, trộn vào file vỏ chung sẽ rối dần. Xoá file này
+   cộng thẻ <link> là trang về nguyên trạng.
+
+   VÌ SAO GIAO DIỆN NẰM Ở ĐÂY MÀ KHÔNG VẼ TỪ COCOS: trên native, webview LUÔN nằm trên canvas
+   của Cocos — Tài Xỉu vẽ bên Cocos sẽ bị chính trang này che mất.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --mg-gold: #f5c451;
+  --mg-blue: #4da6ff;
+  --mg-red: #ff5c5c;
+  --mg-ink: #0d0f1a;
+  --mg-panel: #171a2b;
+}
+
+/* ── Nút nổi mở bảng ─────────────────────────────────────────────────────────────────── */
+/* Kế thừa .float-btn (kéo thả, bám mép, pulse) từ style.css — hai nút cùng loại thì phải
+   cùng hành vi. Ở đây chỉ đổi phần nhìn và vị trí mặc định. */
+.mini-btn {
+  left: auto;
+  right: 14px;
+  top: auto;
+  bottom: 96px;
+  /* ĐÚNG cỡ skeleton mini_game_bt (132×132) — spine không bị ép co lại. */
+  width: 132px;
+  height: 132px;
+  background: radial-gradient(circle at 35% 30%, #ffd76e, #f0932b 55%, #c0392b);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 18px rgba(240, 147, 43, 0.5);
+}
+
+/* Native cũng giữ đúng cỡ spine; chỉ nhích lên cho khỏi đụng mép dưới. */
+.is-native-app .mini-btn {
+  bottom: 74px;
+}
+
+/* KHÔNG nháy. .float-btn có sẵn nhịp pulse 10 giây, nhưng nút này đứng cạnh nhãn kết quả —
+   nút phình ra thu vào làm chữ nhảy theo, rất khó đọc. */
+.mini-btn {
+  animation: none;
+}
+
+/* Có spine mini_game_bt thì bỏ hết phần tự vẽ: nền tròn, viền, đổ bóng và chữ TÀI/XỈU —
+   hoạt cảnh đã mang sẵn tất cả. Không có runtime thì lớp này không được thêm và nút giữ
+   nguyên hình cũ. */
+.mini-btn.has-art {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.mini-btn.has-art span {
+  display: none;
+}
+
+/* ĐANG CHỜ SPINE: giấu cả nút, không để lộ bản dự phòng ở trên rồi đổi hình giữa chừng.
+   Giấu bằng visibility chứ không display:none — display:none làm canvas con rộng 0, mà
+   SpinePlayer đo khung nhìn theo chính canvas đó. Van xả trong minigame.js gỡ lớp này sau
+   ART_WAIT_MS nếu spine mãi không vẽ được, nên nút không bao giờ mất hẳn. */
+.mini-btn.art-pending {
+  visibility: hidden;
+}
+
+/* Khung chứa spine, phủ kín nút. Spine 132×132 nên vuông, khớp nút vuông.
+   z-index 0: #mini-art đứng SAU badge và nhãn trong DOM nên mặc định canvas vẽ đè lên chúng —
+   phải đẩy nó xuống dưới. */
+#mini-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+}
+
+/* Chưa vẽ được spine thì giấu khung chứa, nhưng GIẤU BẰNG visibility CHỨ KHÔNG display:none.
+   display:none làm canvas rộng 0 — SpinePlayer đo khung theo chính canvas đó, nên nó dựng
+   khung nhìn rỗng rồi mới có cỡ thật ở frame sau, và nút nháy một cái lúc hiện ra. visibility
+   giữ nguyên chỗ, canvas đo đúng cỡ ngay từ khung hình đầu. */
+.mini-btn:not(.has-art) #mini-art {
+  visibility: hidden;
+}
+
+/* Badge đếm ngược ở góc trên-phải nút, kiểu huy hiệu thông báo. */
+#mini-clock {
+  position: absolute;
+  z-index: 2; /* trên spine của nút */
+  top: -4px;
+  right: -4px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #5fe08a, #23a355);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font:
+    900 14px/22px system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-style: normal;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* Sắp hết giờ thì đổi đỏ và nhấp — giống đồng hồ chính trong bàn. */
+#mini-clock.urgent {
+  background: linear-gradient(180deg, #ff8a8a, #d63031);
+  animation: mgPulse 1s ease-in-out infinite;
+}
+
+#mini-clock[hidden] {
+  display: none;
+}
+
+.is-native-app #mini-clock {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+/* Nhãn kết quả phiên vừa rồi, nổi ngay TRÊN nút. Giữ nguyên tới khi có kết quả mới. */
+#mini-rs {
+  position: absolute;
+  z-index: 2; /* trên spine của nút */
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: 9px;
+  background: rgba(8, 6, 20, 0.9);
+  border: 1px solid currentColor;
+  font:
+    900 13px/1.25 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#mini-rs.big {
+  color: #ff7f7f;
+}
+
+#mini-rs.small {
+  color: #7fd4ff;
+}
+
+#mini-rs[hidden] {
+  display: none;
+}
+
+.is-native-app #mini-rs {
+  font-size: 11px;
+  padding: 1px 8px;
+}
+
+.mini-btn span {
+  font:
+    800 15px/1.05 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+.is-native-app .mini-btn span {
+  font-size: 11px;
+}
+
+/* ── Cụm nổi ─────────────────────────────────────────────────────────────────────────── */
+/* KHÔNG CÓ LỚP NỀN. Bàn nổi thẳng trên game đối tác — game vẫn nhìn thấy và chơi tiếp được ở
+   phần không bị che, đúng ý "cược trong lúc vẫn đang chơi".
+   Đổi lại: mọi chữ phải tự chống nhoè vì nền phía sau là ảnh động, không kiểm soát được. */
+#mg-panel {
+  position: fixed;
+  /* Mở ra là nằm GIỮA MÀN HÌNH. Trước neo mép dưới, nhưng bàn giờ cao hơn (thêm nút bàn tay,
+     thanh cầu trong bàn) nên nằm dưới là sát rìa. Kéo tay vẫn đổi chỗ được như cũ. */
+  left: 50%;
+  top: 50%;
+  width: min(96vw, 520px);
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+  z-index: 700;
+  display: none;
+  flex-direction: column;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: #fff;
+  /* Chỉ nhận chạm trên các phần tử thật, không nuốt chạm ở khoảng trống → người chơi vẫn bấm
+     xuyên xuống game đối tác ở chỗ trống. */
+  pointer-events: none;
+}
+
+#mg-panel.open {
+  display: flex;
+}
+
+/* Đã đặt vị trí bằng JS thì bỏ căn giữa bằng transform, không thì lệch nửa bề ngang.
+   DÙNG CLASS, không dò chuỗi inline style: trình duyệt tự gộp left/top/right/bottom thành
+   shorthand `inset`, nên [style*="left"] không khớp và cụm văng ra ngoài màn hình. */
+/* CHỈ CÒN transform-origin Ở ĐÂY. Bản thân phép biến hình do applyTransform() trong JS ghi
+   thẳng vào style — ba thứ chồng nhau (căn giữa, hệ số vừa-khung, cỡ thu nhỏ) mà để rải ra
+   nhiều rule CSS thì chúng ghi đè nhau và không rule nào biết hai rule kia.
+   Đã đặt vị trí bằng JS thì PHÓNG TO/THU NHỎ QUANH GÓC TRÁI-TRÊN, không quanh tâm: quanh tâm
+   thì khung thật lệch khỏi left/top một khoảng w(1-tỉ lệ)/2, nên cú kéo kế tiếp (đọc vị trí
+   bằng getBoundingClientRect) ghi ra một toạ độ lệch → cụm giật một cái ngay lúc chạm tay. */
+#mg-panel.placed {
+  transform-origin: top left;
+}
+
+/* Đang kéo thì TẮT transition — có transition thì cụm trượt 0.2s về chỗ mới trong khi tay đã
+   kéo đi, nhìn như nó nhảy. */
+#mg-panel.dragging {
+  transition: none;
+}
+
+#mg-panel > * {
+  pointer-events: auto;
+}
+
+/* Đang kéo thì bỏ mọi transition cho theo tay. */
+#mg-panel.dragging * {
+  transition: none !important;
+}
+
+/* ── Thân ────────────────────────────────────────────────────────────────────────────── */
+#mg-body {
+  position: relative;
+}
+
+/* ── Hai hũ jackpot ──────────────────────────────────────────────────────────────────── */
+#mg-jp {
+  display: flex;
+  /* Hai ảnh KHÁC tỉ lệ nhau nên cùng bề rộng sẽ ra hai chiều cao khác nhau — căn giữa dọc để
+     chênh lệch đó không thành bậc thang. */
+  align-items: center;
+  /* Trên PC hai thanh đã ở đúng cỡ ảnh gốc (255+253) nên KHÔNG còn lấp hết bề ngang hàng —
+     thiếu justify-content thì flex dồn cả hai về mép trái, chừa một khoảng trống bên phải.
+     Trên điện thoại hai thanh vẫn chia hết hàng nên dòng này không đổi gì. */
+  justify-content: center;
+  /* Hẹp bớt khe giữa hai thanh để mỗi thanh rộng thêm — chỗ nào cũng phải nhường cho con số. */
+  gap: 6px;
+  /* margin: 0 auto 6px; */
+  position: relative;
+  bottom: -20px;
+}
+
+/* GIỮ ĐÚNG TỈ LỆ ẢNH GỐC. Bản trước dùng flex:1 + background-size:100% 100% nên hai thanh bị
+   kéo giãn theo bề ngang cụm — cái cúp méo hẳn ra. Hai ảnh KHÁC tỉ lệ nhau (3.75 và 4.29) nên
+   phải khai riêng, không dùng chung một aspect-ratio được. */
+/* BỀ RỘNG do hàng chia, CHIỀU CAO suy ra từ aspect-ratio.
+   Làm ngược lại (ghim height rồi để aspect-ratio quyết bề rộng) thì thanh chỉ rộng ~105px —
+   không đủ chỗ cho số 9 chữ số, và số tràn hẳn ra ngoài thanh.
+   Ảnh vẫn không méo vì aspect-ratio đặt đúng bằng tỉ lệ ảnh gốc. */
+.mg-jp-bar {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: clamp(9px, 2.6vw, 12px);
+  font-weight: 800;
+  color: #ffe08a;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Chỉ khác nhau ở TỈ LỆ và ẢNH. Padding DÙNG CHUNG ở .mg-jp-bar — trước đây mỗi thanh một
+   giá trị (34% và 32%) nên hai dòng số lệch nhau hẳn một khoảng, nhìn rõ ngay. */
+/* CHỮ CĂN GIỮA RUỘT của thanh.
+   Đo trên chính hai ảnh: icon (cúp / vương miện) của CẢ HAI đều kết thúc ở ~25% bề ngang,
+   ruột chạy từ đó tới ~98%.
+   Dùng absolute + left/right chứ KHÔNG dùng padding phần trăm: padding % trong CSS tính theo
+   bề ngang của PHẦN TỬ CHA, không phải của chính nó — đặt 26% ở đây là bị nhân theo cả hàng
+   jackpot và đẩy chữ dạt hẳn sang phải. Absolute % thì tính theo chính thanh. */
+.mg-jp-bar span {
+  position: absolute;
+  /* Nới sát hơn: với font 20px thì "163.371.846" cần 131px mà vùng cũ chỉ 128px — thiếu đúng
+     3px nên bị cắt thành "163.371.8…". Icon kết thúc ở ~25% nhưng mép nó mờ dần, lấn 1.5%
+     không đụng vào hình. */
+  left: 23.5%;
+  right: 1%;
+  /* Span đã absolute nên align-items của thanh KHÔNG còn tác dụng lên nó — phải tự căn dọc,
+     không thì chữ dính mép trên. */
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  white-space: nowrap;
+  /* Số hũ cũng vẽ bằng bộ chữ ảnh (class bmnum), nên bỏ hết phần của chữ thường: cỡ chữ,
+     giãn chữ, cắt bằng ellipsis đều không còn tác dụng.
+     Đo lại cho yên tâm: vùng chữ rộng 195px, mà số 10 chữ số kèm 3 dấu chấm chỉ chiếm 188px
+     ở cỡ gốc — vẫn vừa, không cần thu nhỏ. */
+  overflow: hidden;
+}
+
+#mg-jp1 {
+  aspect-ratio: 255 / 68;
+  background-image: url('./assets/dice_mini/main/bg_JP_1.png');
+}
+
+#mg-jp2 {
+  aspect-ratio: 253 / 59;
+  background-image: url('./assets/dice_mini/main/bg_JP_2.png');
+}
+
+/* ── Số người mỗi cửa + mã phiên ─────────────────────────────────────────────────────── */
+/* NẰM TRONG BÀN, không phải một hàng riêng phía trên. Bàn gốc để số người và mã phiên ngay
+   bên trong mép trên của mặt bàn. */
+#mg-meta {
+  position: absolute;
+  /* Thu hẹp dải để hai ô số người xích lại gần mã phiên. Trước để 16% mỗi bên, tức dải rộng
+     68% mặt bàn — hai ô bị đẩy ra sát mép, cách mã phiên ở giữa một khoảng trống lớn. */
+  left: 23%;
+  right: 23%;
+  top: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: clamp(9px, 2.6vw, 12px);
+  color: rgba(255, 255, 255, 0.8);
+  z-index: 5;
+  pointer-events: none;
+}
+
+#mg-session {
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dùng lại bgQuantity.png — nó CÓ SẴN icon hình người, đúng chỗ của nó là ở đây chứ không
+   phải ô hiển thị tiền. */
+.mg-users {
+  min-width: clamp(42px, 13vw, 58px);
+  padding: 3px 7px 3px 20px;
+  background: url('./assets/dice_mini/main/bgQuantity.png') center/100% 100% no-repeat;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Bàn cược ────────────────────────────────────────────────────────────────────────── */
+/* table.png là hình bầu dục có sẵn lỗ tròn tối ở giữa. Lỗ đó dành cho SỐ ĐẾM NGƯỢC (rồi tới
+   xúc xắc khi mở), KHÔNG phải chỗ đặt bát — bow.png là của màn khác. */
+#mg-table {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  aspect-ratio: 673 / 347;
+  background: url('./assets/dice_mini/main/table.png') center/100% 100% no-repeat;
+  /* Bàn là vùng KÉO. touch-action:none để trình duyệt không cướp cử chỉ thành cuộn/zoom. */
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#mg-panel.dragging #mg-table {
+  cursor: grabbing;
+}
+
+/* Nút trên bàn vẫn phải bấm được bình thường — trả lại con trỏ và cho phép chạm. */
+#mg-table button {
+  cursor: pointer;
+  touch-action: auto;
+}
+
+/* Ô tròn giữa bàn */
+/* Ô tròn giữa bàn = CÁI BÁT. Mọi thứ diễn ra bên trong nó, và bị CẮT TRÒN theo mép bát —
+   animation tung xúc xắc phải nằm gọn trong đây, không được tràn ra mặt bàn. */
+#mg-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  z-index: 3;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+#mg-count {
+  font-size: clamp(30px, 9vw, 54px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+#mg-count.urgent {
+  color: var(--mg-red);
+  animation: mgPulse 1s ease-in-out infinite;
+}
+
+/* ── Tự nặn: cái bát và công tắc bàn tay ────────────────────────────────────────────── */
+/* Cỡ và chỗ đặt từ prefab: node bowl 230px trên bàn 673 → 34.2%, tâm (2.2, 3). */
+#mg-bowl {
+  position: absolute;
+  left: 50.3%;
+  top: 49.1%;
+  width: 34.2%;
+  transform: translate(-50%, -50%);
+  z-index: 6; /* trên xúc xắc, dưới hai cửa và các nút */
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+#mg-bowl img {
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.65));
+}
+
+#mg-bowl.dragging {
+  cursor: grabbing;
+}
+
+/* Kéo đủ xa → bát bay lên và mờ đi, giống tween lên y=800 của bàn gốc. */
+#mg-bowl.gone {
+  transition:
+    transform 0.45s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.45s;
+  transform: translate(-50%, -260%) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Công tắc bàn tay: prefab đặt ở (4.8, -123.6), cỡ 55 trên bàn 673. */
+#mg-btn-hand {
+  position: absolute;
+  left: 50.7%;
+  top: 85.6%;
+  transform: translate(-50%, -50%);
+  width: 8.2%;
+  aspect-ratio: 55 / 57;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 9;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#mg-btn-hand img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}
+
+/* Gạch chéo báo ĐANG TẮT — bàn gốc cũng bật/tắt một node con để chỉ trạng thái. */
+.mg-hand-off {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78%;
+  height: 2.5px;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border-radius: 2px;
+  background: var(--mg-red);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+#mg-btn-hand.on .mg-hand-off {
+  display: none;
+}
+
+#mg-btn-hand.on img {
+  filter: drop-shadow(0 0 7px var(--mg-gold));
+}
+
+#mg-btn-hand:active {
+  transform: translate(-50%, -50%) scale(0.9);
+}
+
+/* Đồng hồ nhỏ ở góc bàn, dùng trong pha trả thưởng. Đặt ở góc trên-trái mặt bàn — chỗ đó
+   trống, không đè lên hai cửa cũng không đè lên xúc xắc giữa bàn. */
+/* GÓC CHÉO TRÊN-PHẢI CỦA Ô TRÒN, ngay trên vành.
+   Trước để giữa mép trên bàn (left 50%, top 12%) — chỗ đó đụng mã phiên. Ô tròn rộng 30% bàn
+   → bán kính 15% ngang và 29.1% dọc (bàn 673×347 nên cùng số px ra hai tỉ lệ khác nhau);
+   điểm 45° trên vành là 50% + r·cos45 → 60.6% / 29.4%.
+   Nó là con trực tiếp của bàn nên không dính overflow cắt tròn của #mg-center. */
+#mg-mini-timer {
+  position: absolute;
+  /* GÓC CHÉO TRÊN-TRÁI của ô tròn. Cùng cách tính như trước, chỉ đổi dấu phần ngang:
+     ô tròn rộng 30% bàn → bán kính 15% ngang và 29.1% dọc, điểm 45° là 50% ∓ r·cos45. */
+  left: 39.4%;
+  top: 29.4%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  min-width: 34px;
+  padding: 2px 9px;
+  border-radius: 11px;
+  background: rgba(10, 8, 24, 0.8);
+  border: 1px solid rgba(245, 196, 81, 0.5);
+  color: var(--mg-gold);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.3;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+#mg-mini-timer.urgent {
+  color: var(--mg-red);
+  border-color: rgba(255, 92, 92, 0.7);
+  animation: mgPulse 1s ease-in-out infinite;
+}
+
+#mg-count.waiting {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: clamp(22px, 6vw, 36px);
+}
+
+@keyframes mgPulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Xúc xắc nằm đè lên số đếm ngược khi có kết quả */
+#mg-dice {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  /* KHÔNG phủ tối lên lòng bát. Trước đây có một lớp radial-gradient đen 92% để xúc xắc nổi
+     lên, nhưng nó nuốt luôn cả nền tím và vành sáng của ô tròn — bàn gốc thì vẫn thấy nguyên
+     lòng bát phía sau ba con xúc xắc. Muốn xúc xắc nổi thì đã có bóng đổ ở #mg-dice img. */
+}
+
+#mg-dice.show {
+  opacity: 1;
+}
+
+/* Vị trí và cỡ lấy từ prefab, quy ra % của BÀN (673×347) rồi đổi sang % của #mg-dice — nó
+   phủ đúng ô giữa nên phải nhân lại theo bề rộng ô. Ba con 86px × scale 0.8 = 68.8px:
+     xx1 (3.4, 51.3)   → tâm 50.51% / 35.22% bàn — con TRÊN
+     xx2 (35.4, −18.8) → tâm 55.26% / 55.42% bàn — con DƯỚI PHẢI
+     xx3 (−38.3, −19)  → tâm 44.31% / 55.48% bàn — con DƯỚI TRÁI
+   Xếp một hàng ngang như trước là sai hẳn bố cục, nhìn ra ngay là đồ giả. */
+#mg-dice img {
+  position: absolute;
+  width: var(--d-size);
+  height: auto;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
+}
+
+/* Ô #mg-dice phủ vùng bàn: trái 35%, trên 20.9%, rộng 30%, cao 58.19% — nên toạ độ theo bàn
+   ở trên phải quy tiếp về % của chính ô này. */
+#mg-dice {
+  --d-size: 34.07%; /* 10.22% bàn */
+}
+
+#mg-dice .d1 {
+  left: 51.7%;
+  top: 24.61%;
+}
+
+#mg-dice .d2 {
+  left: 67.53%;
+  top: 59.32%;
+}
+
+#mg-dice .d3 {
+  left: 31.03%;
+  top: 59.43%;
+}
+
+/* ── Hai cửa: TÀI TRÁI, XỈU PHẢI ─────────────────────────────────────────────────────── */
+/* Theo bàn thật. KHÔNG suy vị trí từ số hiệu cổng (cổng 1 = XỈU, cổng 2 = TÀI) — hai thứ đó
+   không liên quan nhau. */
+.mg-side {
+  position: absolute;
+  top: 53%;
+  transform: translateY(-50%);
+  width: 27%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  z-index: 4;
+}
+
+#mg-side-big {
+  left: 7%;
+}
+#mg-side-small {
+  right: 7%;
+}
+
+.mg-gate-img {
+  width: auto;
+  height: auto;
+  transition:
+    filter 0.2s,
+    transform 0.15s;
+}
+
+.mg-side.picked .mg-gate-img {
+  filter: drop-shadow(0 0 10px var(--mg-gold)) brightness(1.15);
+}
+
+.mg-side.locked .mg-gate-img {
+  filter: grayscale(0.85) brightness(0.55);
+}
+
+/* Tổng cược của CẢ BÀN trên cửa đó */
+/* Tổng cược mỗi cửa vẽ bằng BỘ CHỮ SỐ ẢNH của bản gốc (fontBet.png) — xem .bmnum bên dưới và
+   bảng BM trong minigame.js. Màu và bóng đổ do chính ảnh lo nên không khai gì thêm ở đây. */
+
+/* Dùng chung cho mọi ô vẽ bằng bộ chữ số ảnh: tổng cược hai cửa và hai thanh hũ. */
+.bmnum {
+  /* Các ô chữ là inline-block xếp cạnh nhau; khoảng trắng giữa chúng trong HTML sẽ thành khe
+     thừa, mà font-size 0 thì khe đó biến mất. */
+  font-size: 0;
+  line-height: 0;
+  white-space: nowrap;
+}
+
+.bmnum i {
+  display: inline-block;
+  background-image: url('./assets/dice_mini/font/fontBet.png');
+  background-repeat: no-repeat;
+  vertical-align: top;
+}
+
+/* Nút ĐẶT CƯỢC riêng từng cửa */
+.mg-betbtn {
+  width: 96%;
+  padding: 5px 4px;
+  border: none;
+  background: url('./assets/dice_mini/main/bgBoxBet.png') center/100% 100% no-repeat;
+  color: #dbe7ff;
+  font-size: clamp(9px, 2.5vw, 12px);
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    filter 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-betbtn:active {
+  transform: scale(0.94);
+}
+
+.mg-betbtn:disabled {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: default;
+}
+
+.mg-side.picked .mg-betbtn {
+  filter: drop-shadow(0 0 6px var(--mg-gold)) brightness(1.2);
+}
+
+/* Tiền CỦA MÌNH đã đặt trên cửa đó */
+/* Tiền mình đã đặt cũng vẽ bằng bộ chữ số ảnh (class bmnum) — cùng kiểu với tổng cược và hũ.
+   Màu vàng và viền tối đã nằm sẵn trong ảnh nên không khai gì thêm. */
+.mg-mybet {
+  /* Giữ chỗ khi bằng 0 để bố cục không nhảy lúc vừa đặt xong. */
+  visibility: hidden;
+  /* NHỎ HƠN 5px so với mấy ô kia: chữ gốc cao 25 → còn 20, tức tỉ lệ 0.8.
+     Phải thu bằng transform chứ không phải font-size — đây là chữ vẽ bằng ảnh, mỗi ký tự có
+     bề rộng riêng tính bằng px, font-size không còn tác dụng gì.
+     Neo ở mép trên-giữa để nó thu vào giữa và không trồi lên nút ĐẶT CƯỢC ngay trên. */
+  transform: scale(0.8);
+  transform-origin: center top;
+  /* Thu nhỏ không làm ô chiếm ít chỗ đi — kéo lại đúng 5px thừa để hàng không hở. */
+  margin-bottom: -5px;
+}
+
+.mg-mybet.on {
+  visibility: visible;
+}
+
+/* ── Cầu ─────────────────────────────────────────────────────────────────────────────── */
+/* Dãy chấm nhỏ trên thanh ngang, không in số — bàn gốc chỉ phân biệt bằng màu. */
+/* Thanh cầu bám đúng tỉ lệ ảnh gốc (499×47) và viên cầu TRẢI ĐỀU KÍN THANH.
+   Bản trước dồn hết về trái rồi bỏ trống phần còn lại — bàn gốc thì luôn kín. */
+/* Vị trí và cỡ quy đổi THẲNG từ 7.prefab, mốc là bàn bg_Main_TX 673×347 (đúng bằng table.png):
+   historyBar 499×47 tại (x -1, y -169.9). Ra left 12.78% / width 74.15% / top 92.19%.
+   Đáy thanh rơi ở 105.7% chiều cao bàn — tức nó THÒ XUỐNG dưới đáy bàn, đúng như bàn gốc.
+   Trước để width 100% nằm tách dưới bàn nên thanh dài hơn hẳn bản Cocos. */
+#mg-cau {
+  position: absolute;
+  left: 12.779%;
+  top: 92.19%;
+  width: 74.146%;
+  height: 13.545%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Lề hai đầu = (499 - 476.5) / 2 / 499, lấy từ prefab. */
+  padding: 0 2.25%;
+  background: url('./assets/dice_mini/main/LinesoiCau.png') center/100% 100% no-repeat;
+  /* PHẢI cho tràn: viên mới nhất nhảy lên cao hơn thanh, `hidden` là cắt cụt mất phần nhô ra.
+     Không sợ tràn thứ khác — số ô cố định 18 nên hàng cầu luôn vừa đúng bề ngang thanh. */
+  overflow: visible;
+}
+
+/* ── Khay đặt cược ───────────────────────────────────────────────────────────────────── */
+/* Chỉ hiện sau khi chọn cửa. Trượt lên để người chơi thấy rõ nó vừa xuất hiện — không thì
+   bảng tự dài ra hai hàng mà không hiểu vì sao. */
+#mg-tray {
+  margin-top: 8px;
+  padding: 8px 8px 10px;
+  border-radius: 12px;
+  background: rgba(8, 10, 22, 0.9);
+  border: 1px solid rgba(245, 196, 81, 0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: mgTrayIn 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+#mg-tray[hidden] {
+  display: none;
+}
+
+@keyframes mgTrayIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
+/* ── Chọn mệnh giá ───────────────────────────────────────────────────────────────────── */
+/* Hàng chip cuộn ngang (7 mệnh giá không vừa màn hình dọc), nhưng nút Tất tay phải GHIM
+   ngoài vùng cuộn — để trong đó thì nó nằm cuối và người chơi không bao giờ thấy. */
+#mg-chipbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Như #mg-keys: display:flex thắng hidden, phải tự tắt lại thì đổi qua bàn phím mới giấu
+   được hàng mệnh giá. */
+#mg-chips[hidden] {
+  display: none;
+}
+
+#mg-chips {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  /* Khe hẹp để BẢY chip ở cỡ gốc (91px) vừa đúng hàng: 7×91 + 6×2 = 649, hàng rộng 655.
+     Để 7px như trước là 679 — thừa 24px và cả hàng phải cuộn ngang. */
+  gap: 2px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  /* Gợi ý còn nội dung bên phải: mờ dần ở mép. */
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 88%, transparent 100%);
+}
+
+#mg-chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* ĐÚNG CỠ ẢNH CHIP GỐC (chip/*.png là 90–91 × 95). Trước để 52×52 vuông nên chip tròn vừa bị
+   thu nhỏ vừa méo tỉ lệ — ảnh cao hơn rộng chứ không vuông. */
+.mg-chip {
+  flex: none;
+  width: 91px;
+  height: 95px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-chip img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mg-chip.on {
+  transform: translateY(-5px) scale(1.1);
+  filter: drop-shadow(0 0 8px var(--mg-gold));
+}
+
+.mg-chip:disabled {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: default;
+}
+
+/* ── Hàng nút ────────────────────────────────────────────────────────────────────────── */
+#mg-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Bốn nút chia đều bề ngang và ĐƯỢC PHÉP CO. Ghim chiều cao ảnh như trước thì bề ngang nút
+   là cố định, bốn cái cộng lại vượt khay và hai nút ngoài cùng bị cắt mất mép. */
+/* ĐÚNG CỠ ẢNH GỐC: btnCancle 176×78, ba cái còn lại 175×78. Trước để flex:1 nên chúng chia
+   đều bề ngang hàng và bị kéo giãn/bóp tuỳ khung — chữ trong ảnh méo theo.
+   Chênh 1px giữa nút Huỷ và ba nút kia không nhìn ra, lấy 175 cho cả bốn để hàng cân. */
+.mg-act {
+  flex: none;
+  width: 175px;
+  height: 78px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    filter 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ảnh lấp trọn nút, và nút đã đúng cỡ gốc 175×78. Trước có max-height:46px — dấu vết của thời
+   bốn nút còn chia đều bề ngang khay, nó bóp ảnh còn 46 cao trong khi ảnh gốc cao 78. */
+.mg-act img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mg-act:active {
+  transform: scale(0.94);
+}
+
+.mg-act:disabled {
+  filter: grayscale(0.85) brightness(0.55);
+  cursor: default;
+}
+
+/* Số tiền đang gõ. Nằm trên dòng "Đặt vào ..." chứ không chen giữa hàng nút — bốn nút
+   HUỶ / ĐỒNG Ý / SỐ KHÁC / TẤT TAY đã chiếm hết bề ngang. */
+#mg-stake {
+  color: var(--mg-gold);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Bàn phím SỐ KHÁC ────────────────────────────────────────────────────────────────── */
+/* Thay CHỖ hàng mệnh giá (cùng nằm trong #mg-chipbar, hai cái ẩn hiện đổi nhau), nên mở bàn
+   phím chỉ làm cụm cao thêm đúng một hàng thứ hai của lưới. */
+/* display:grid THẮNG thuộc tính hidden của HTML, phải tự tắt lại — không thì bàn phím hiện
+   cùng lúc với hàng mệnh giá ngay từ đầu. */
+#mg-keys[hidden] {
+  display: none;
+}
+
+#mg-keys {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.mg-key {
+  /* min-width mặc định của ô lưới là auto = bề rộng ảnh, nên phím không chịu co và hàng
+     bảy phím tràn ra ngoài khay. */
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s;
+}
+
+.mg-key img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mg-key:active {
+  transform: scale(0.9);
+}
+
+.mg-key:disabled {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: default;
+}
+
+/* Nút SỐ KHÁC sáng lên khi bàn phím đang mở. */
+#mg-other.on img {
+  filter: drop-shadow(0 0 8px var(--mg-gold));
+}
+
+/* Nút TẤT TAY — dùng luôn ảnh có sẵn trong atlas. */
+/* TẤT TAY giờ nằm chung hàng bốn nút, chia đều như ba nút kia — không còn ghim cỡ riêng. */
+
+/* ── Thông báo trong bảng ────────────────────────────────────────────────────────────── */
+/* Không dùng toast chung của app.js cho việc trong bảng: toast đó neo ở đỉnh MÀN HÌNH, nằm
+   trên game đối tác, dễ bị hiểu là lỗi của game kia. */
+/* Thông báo kiểu TOAST như bên Cocos: nổi giữa màn hình, trên tất cả — kể cả popup (720) và
+   cụm bàn (700) — rồi tự tắt. Trước nó là một dải nằm dưới cụm bàn, mở popup là bị che kín,
+   mà đây lại đúng lúc hay báo lỗi nhất ("số dư không đủ", "chưa tới lượt đặt cược"). */
+#mg-note {
+  position: fixed;
+  left: 50%;
+  top: 26%;
+  transform: translate(-50%, -50%) scale(0.94);
+  z-index: 900;
+  max-width: min(86vw, 460px);
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(20, 10, 24, 0.94);
+  border: 1px solid rgba(255, 92, 92, 0.55);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffc9c9;
+  text-align: center;
+  /* Chỉ để xem, không chặn thao tác phía dưới. */
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.18s,
+    transform 0.18s;
+}
+
+#mg-note.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#mg-note.ok {
+  border-color: rgba(80, 220, 140, 0.55);
+  color: #b6f5d0;
+}
+
+/* ── Lớp chờ ─────────────────────────────────────────────────────────────────────────── */
+#mg-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(11, 13, 22, 0.85);
+  z-index: 10;
+  display: none;
+}
+
+#mg-loading.hidden {
+  display: none;
+}
+
+/* ── Bạch thủ ────────────────────────────────────────────────────────────────────────── */
+/* Cược đúng MỘT tổng (4..17). Là loại cược riêng, không dính khoá một-cửa của Tài/Xỉu — đặt
+   được nhiều tổng cùng lúc. Mặc định gập lại vì 14 ô chiếm gần hết màn hình dọc. */
+/* Nút nằm GIỮA bàn và chat, cùng khu với khay chọn tiền. */
+#mg-bt-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 0;
+}
+
+#mg-bt-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    filter 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ĐÚNG CỠ ẢNH GỐC btnBachThu.png (160×54). Trước ghim chiều cao 34 rồi để bề ngang tự suy,
+   nút ra bé hơn hai phần ba cỡ thật. */
+#mg-bt-toggle img {
+  width: 160px;
+  height: 54px;
+  display: block;
+}
+
+#mg-bt-toggle:active {
+  transform: scale(0.94);
+}
+
+#mg-bt-toggle.on img {
+  filter: drop-shadow(0 0 8px var(--mg-gold)) brightness(1.15);
+}
+
+/* ĐÈ LÊN BÀN, không nằm trong luồng — mở ra là bàn không bị đẩy xuống, cụm không cao thêm.
+   Rộng hơn bàn một chút (110%) để 6 ô mỗi hàng không bị bóp; bàn đã overflow:visible nên phần
+   thò ra hai bên vẫn hiện. */
+#mg-bachthu {
+  position: absolute;
+  left: 50%;
+  /* Nhích LÊN khỏi tâm bàn: lưới ba hàng cao hơn bàn nên căn giữa đúng tâm là đáy nó thò
+     xuống che mất nút BẠCH THỦ ngay dưới. */
+  top: 34%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  z-index: 12;
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: rgba(10, 12, 26, 0.94);
+  border: 1px solid rgba(150, 120, 255, 0.45);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+#mg-bachthu[hidden] {
+  display: none;
+}
+
+/* 7 cột × 2 hàng cho 14 tổng. auto-fit để màn hẹp tự bớt cột thay vì tràn ngang. */
+/* 14 tổng (4..17) chia 5 mỗi hàng = 3 hàng (5/5/4).
+   Dùng FLEX WRAP chứ không grid: grid ghim ô vào cột nên hàng cuối 4 ô luôn dồn về trái,
+   nhìn lệch hẳn. Flex wrap cho hàng thiếu ô tự căn giữa. Bề rộng ô vẫn tính theo 5 cột để
+   ba hàng thẳng cột với nhau. */
+#mg-bt-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.mg-bt-cell {
+  flex: 0 0 calc((100% - 4 * 5px) / 5);
+}
+
+/* Ô giữ ĐÚNG TỈ LỆ ảnh gốc bg_gate_bach_thu.png (99×95) và dùng `contain` — trước để
+   `100% 100%` nên ô bị kéo dẹt theo bề ngang lưới, viền vẽ sẵn trong ảnh méo theo.
+   Không vẽ border/radius bằng CSS nữa: ảnh đã có sẵn viền, chồng thêm là ra hai lớp khung. */
+.mg-bt-cell {
+  min-width: 0;
+  aspect-ratio: 99 / 95;
+  padding: 0;
+  border: none;
+  background: url('./assets/dice_mini/main/bg_gate_bach_thu.png') center/contain no-repeat;
+  color: #fff;
+  cursor: pointer;
+  /* Neo tuyệt đối theo % chiều cao ô, KHÔNG xếp dòng bằng flex: hai chữ phải rơi đúng hai
+     vùng vẽ sẵn trong ảnh nền (dải sáng phía trên = số tổng, ô đen phía dưới = tiền), mà
+     flex chỉ biết xếp sát nhau ở giữa. */
+  position: relative;
+  display: block;
+  transition:
+    transform 0.12s,
+    border-color 0.2s,
+    filter 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-bt-cell:active {
+  transform: scale(0.94);
+}
+
+/* Ô không còn border của CSS nên đánh dấu bằng quầng sáng, không phải đổi màu viền. */
+.mg-bt-cell.picked {
+  filter: drop-shadow(0 0 7px rgba(245, 196, 81, 0.85)) brightness(1.18);
+}
+
+/* Đã có tiền cược trên tổng này */
+.mg-bt-cell.has .mg-bt-num {
+  color: var(--mg-gold);
+}
+
+/* Tiền đã đặt: nằm trong Ô NHỎ PHÍA TRÊN của ảnh nền — ô đó KHÔNG nằm giữa mà lệch hẳn sang
+   phải (quét ảnh: x 30.3% .. 91.9%, tâm 61.1%; dọc tâm 19%). Căn giữa cả ô là chữ lệch trái
+   ra ngoài khung. */
+.mg-bt-val {
+  position: absolute;
+  left: 30.3%;
+  right: 8.1%;
+  top: 19%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 20px; /* 10 × 2 */
+  font-weight: 900;
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mg-bt-cell:disabled {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: default;
+}
+
+/* Vị trí trong ô căn theo CHÍNH ẢNH NỀN bg_gate_bach_thu.png, quét độ sáng từng hàng:
+     ô đen  = 31.6% .. 62.1%, tâm 46.8%  → số tổng nằm giữa ô đen
+     dải trên  (0 .. 31.6%)              → tiền đã đặt
+     dải dưới  (62.1% .. 100%)           → chữ mời "Đặt cược"
+   Prefab để lblGate ở 52.1%, nhưng prefab dùng ảnh ô khác — theo nó thì số tụt thấp hơn tâm
+   ô đen khoảng 3px, nhìn rõ là lệch. */
+.mg-bt-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46.8%;
+  transform: translateY(-50%);
+  /* Gấp đôi: 17 → 34. Bỏ clamp theo vw — cụm bàn đã được scale nguyên khối nên px cố định
+     cho ra cùng một hình ở mọi màn, còn vw thì mỗi máy một cỡ. */
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nằm trong Ô ĐEN của ảnh nền: chữ "Đặt cược" khi chưa cược, số tiền khi đã cược. */
+.mg-bt-money {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  /* Giữa dải dưới, tính từ mép dưới ô đen (62.1%) tới đáy ô. */
+  top: 81%;
+  transform: translateY(-50%);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 22px;
+  font-size: 20px; /* 10 × 2 */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Chống nhoè trên nền game ────────────────────────────────────────────────────────── */
+/* Không có lớp nền nên chữ nằm thẳng trên ảnh động của game đối tác. Mấy chỗ chữ trần phải tự
+   có viền tối, không thì gặp nền sáng là mất hút. */
+/* .mg-total và .mg-mybet không nằm đây nữa: chúng vẽ bằng ảnh, mà text-shadow thì không ăn
+   vào ảnh nền — viền tối đã có sẵn trong chính fontBet.png. */
+#mg-meta,
+#mg-count {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.95),
+    0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+#mg-jp,
+#mg-cau,
+#mg-chipbar,
+#mg-actions,
+#mg-meta {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+}
+
+/* ── Bảng kết quả cuối phiên ─────────────────────────────────────────────────────────── */
+/* Đè lên giữa bàn sau khi mở xúc xắc. Không dùng toast chung của app.js: toast đó neo ở đỉnh
+   MÀN HÌNH, nằm trên game đối tác — người chơi dễ tưởng là thông báo của game kia. */
+/* Nằm TRONG bàn, đè lên giữa mặt bàn. Trước đây nó là con của #mg-body nên "giữa" là giữa cả
+   cụm — rơi xuống tận thanh cầu, che mất chỗ không liên quan. */
+#mg-result {
+  position: absolute;
+  left: 50%;
+  /* Đưa LÊN chỗ số phiên (tâm ở 15.8% chiều cao bàn, đo từ #mg-session). Không để giữa bàn
+     vì đó là chỗ xúc xắc vừa hiện, mà cũng không để mép dưới — dưới đó đã có nút bàn tay và
+     thanh cầu. Che số phiên là chấp nhận được: lúc này phiên đã chốt xong rồi. */
+  top: 15.8%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  min-width: 40%;
+  padding: 5px 14px;
+  border-radius: 12px;
+  background: rgba(6, 8, 18, 0.92);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  text-align: center;
+  pointer-events: none;
+  animation: mgPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#mg-result[hidden] {
+  display: none;
+}
+
+#mg-result.win {
+  border-color: #5ad68a;
+  box-shadow: 0 0 20px rgba(90, 214, 138, 0.45);
+}
+#mg-result.lose {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes mgPop {
+  from {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+  }
+}
+
+/* Gộp bên thắng và tổng vào MỘT dòng cho gọn — bảng nằm dưới mép bàn nên không còn nhiều chỗ
+   dọc như lúc ở giữa. */
+#mg-result {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Bảng giờ CHỈ có một dòng tiền thắng, và chỉ bật lên khi đã biết số tiền — không còn cảnh
+   khung rỗng chờ rồi nhảy cao lên, nên bỏ luôn min-height giữ chỗ. */
+#mg-rs-win {
+  font-size: clamp(13px, 3.8vw, 17px);
+  font-weight: 800;
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+#mg-result.win #mg-rs-win {
+  color: #7ff0aa;
+}
+#mg-result.lose #mg-rs-win {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Vòng sáng úp lên ô đếm ngược ────────────────────────────────────────────────────── */
+/* Spine `tron_tx` — vòng sáng bao quanh SỐ ĐẾM NGƯỢC, không phải cái bát che. Chạy vòng lặp
+   suốt lúc còn nhận cược. Không có runtime Spine thì rơi về vòng sáng vẽ bằng CSS. */
+/* Vòng sáng nằm NGOÀI #mg-center: nó rộng hơn cái bát và phải tràn ra được, mà #mg-center
+   giờ cắt tròn theo mép bát nên để bên trong là bị xén mất. */
+/* Cỡ và chỗ đặt lấy từ prefab: node circleMid mang tron_tx, 423.35px × scale 0.77 = 326px
+   trên bàn 673 → 48.4% bề rộng bàn, tâm gần đúng tâm bàn. Trước để 40% nên vòng nhỏ hơn
+   lỗ tròn giữa bàn. */
+#mg-ring {
+  position: absolute;
+  left: 50.4%;
+  top: 49.8%;
+  width: 48.4%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  display: none;
+  z-index: 2; /* DƯỚI số đếm ngược — nó là vòng trang trí, không được che số */
+  pointer-events: none;
+}
+
+#mg-ring.on {
+  display: block;
+}
+
+/* Khử nền đen của atlas bằng `screen` — đen thành vô hình, phần sáng cháy lên, đúng ý đồ
+   additive của bản gốc. Trước dùng bộ lọc SVG đặt alpha theo độ sáng: nó ăn cả phần tối có
+   thật của hoạt cảnh và trên máy yếu thì mỗi khung phải chạy lại bộ lọc. `screen` do GPU lo. */
+#mg-ring.spine {
+  mix-blend-mode: screen;
+}
+
+/* Dự phòng: vòng sáng tím xoay, gần với ảnh gốc nhất có thể bằng CSS thuần. */
+#mg-ring.on:not(.spine)::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 130, 255, 0.85);
+  box-shadow:
+    0 0 16px rgba(168, 130, 255, 0.75),
+    inset 0 0 16px rgba(120, 90, 220, 0.55);
+  animation: mgRingPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes mgRingPulse {
+  50% {
+    box-shadow:
+      0 0 26px rgba(190, 150, 255, 0.95),
+      inset 0 0 22px rgba(140, 110, 240, 0.7);
+  }
+}
+
+/* ── Tung xúc xắc ────────────────────────────────────────────────────────────────────── */
+/* Flipbook 21 frame cắt từ chính TungXucXac.anim của bản Cocos. Dùng DẢI ảnh + steps() thay
+   vì 21 thẻ <img>: một request, và steps() nhảy frame dứt khoát đúng kiểu flipbook thay vì
+   nội suy mượt giữa hai frame.
+   21 frame × ô 244px = dải 5124px. Đặt background-size theo BỘI SỐ đó, không đặt theo px cứng
+   — cụm co giãn theo bề ngang màn hình. */
+/* LẤP ĐẦY cả cái bát, không giữ tỉ lệ 244/219 của ô ảnh.
+   Giữ tỉ lệ đó thì khung animation thành hình chữ nhật NẰM NGANG rộng hơn cao, xúc xắc tung
+   tràn ra hai bên khỏi vòng tròn — đúng cái Đại Ka thấy. Ô bát là hình VUÔNG, nên khung phát
+   cũng phải vuông; contain bên dưới lo phần không méo ảnh. */
+/* Cỡ và chỗ đặt lấy từ prefab: node animationDice tại (0, 4.5) trên bàn 673×347, frame lớn
+   nhất của clip là 244×219 → rộng 36.26% bàn, tâm x 50% / y 48.7%.
+   21 ảnh rời đều đã căn giữa sẵn trong khung 244×219 nên chỉ cần đổi src, không phải tính
+   lại vị trí gì. */
+#mg-roll {
+  position: absolute;
+  left: 50%;
+  top: 48.7%;
+  width: 36.26%;
+  aspect-ratio: 244 / 219;
+  transform: translate(-50%, -50%);
+  display: none;
+  z-index: 7;
+  pointer-events: none;
+}
+
+/* 21 thẻ chồng khít lên nhau, mỗi thẻ chỉ sáng đúng LƯỢT 50ms của mình.
+
+   Nhịp do CSS giữ, KHÔNG dùng requestAnimationFrame. rAF chạy trên luồng chính nên mốc thời
+   gian dao động: đo trên video 60fps thì phần lớn frame giữ đúng 3 khung, nhưng xen kẽ có chỗ
+   2 và 4 khung, và cả cú tung hụt mất 0.12s vì bỏ frame — mắt đọc ra là xúc xắc chạy giật.
+   CSS animation chạy trên compositor nên không dính chuyện đó.
+
+   Mỗi thẻ: animation 50ms, delay lệch nhau 50ms, fill-mode NONE. Trước lượt và sau lượt đều
+   rơi về opacity 0 của chính quy tắc dưới — không cần keyframes tắt. */
+#mg-roll img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+#mg-roll.rolling img {
+  animation: mgFrameOn 50ms linear 1;
+}
+
+@keyframes mgFrameOn {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+#mg-roll.rolling img:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+#mg-roll.rolling img:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+#mg-roll.rolling img:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+#mg-roll.rolling img:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+#mg-roll.rolling img:nth-child(5) {
+  animation-delay: 200ms;
+}
+
+#mg-roll.rolling img:nth-child(6) {
+  animation-delay: 250ms;
+}
+
+#mg-roll.rolling img:nth-child(7) {
+  animation-delay: 300ms;
+}
+
+#mg-roll.rolling img:nth-child(8) {
+  animation-delay: 350ms;
+}
+
+#mg-roll.rolling img:nth-child(9) {
+  animation-delay: 400ms;
+}
+
+#mg-roll.rolling img:nth-child(10) {
+  animation-delay: 450ms;
+}
+
+#mg-roll.rolling img:nth-child(11) {
+  animation-delay: 500ms;
+}
+
+#mg-roll.rolling img:nth-child(12) {
+  animation-delay: 550ms;
+}
+
+#mg-roll.rolling img:nth-child(13) {
+  animation-delay: 600ms;
+}
+
+#mg-roll.rolling img:nth-child(14) {
+  animation-delay: 650ms;
+}
+
+#mg-roll.rolling img:nth-child(15) {
+  animation-delay: 700ms;
+}
+
+#mg-roll.rolling img:nth-child(16) {
+  animation-delay: 750ms;
+}
+
+#mg-roll.rolling img:nth-child(17) {
+  animation-delay: 800ms;
+}
+
+#mg-roll.rolling img:nth-child(18) {
+  animation-delay: 850ms;
+}
+
+#mg-roll.rolling img:nth-child(19) {
+  animation-delay: 900ms;
+}
+
+#mg-roll.rolling img:nth-child(20) {
+  animation-delay: 950ms;
+}
+
+#mg-roll.rolling img:nth-child(21) {
+  animation-delay: 1000ms;
+}
+
+#mg-roll.on {
+  display: block;
+}
+
+/* ── Hiệu ứng thắng ở cửa ────────────────────────────────────────────────────────────── */
+/* Cỡ và chỗ đặt lấy từ prefab: node maintaixiu mang WIN_TX, 200px trên bàn 673 → 29.7%,
+   tâm y ở 37.8% chiều cao bàn. Tâm ngang lấy theo hai cửa gateBig / gateSmall. */
+.mg-winfx {
+  position: absolute;
+  top: 37.8%;
+  width: 29.7%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 7;
+  /* Cùng lý do với #mg-ring: atlas WIN_TX cũng là ô đen đục. */
+  mix-blend-mode: screen;
+}
+
+#mg-winfx-big {
+  left: 20.6%; /* tâm gateBig: x = -197.6 */
+}
+
+#mg-winfx-small {
+  left: 79.9%; /* tâm gateSmall: x = +201.4 */
+}
+
+/* Chữ TÀI/XỈU của cửa vừa ăn sáng nhấp nháy SUỐT tới khi sang phiên — đi cùng nhịp với spine
+   WIN_TX (cũng loop). Trước để đúng 5 nhịp rồi tắt, thành ra chữ tối đi trong khi spine vẫn
+   nháy, nhìn như hỏng. Lớp .won chỉ bị gỡ ở clearWinFx(), tức lúc phiên mới bắt đầu. */
+.mg-side.won .mg-gate-img {
+  animation: mgWinGlow 0.7s ease-in-out infinite;
+}
+
+@keyframes mgWinGlow {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: drop-shadow(0 0 14px var(--mg-gold)) brightness(1.35);
+  }
+}
+
+/* Canvas do SpinePlayer dựng — ép lấp đầy chỗ cắm và không chặn chạm. */
+.mg-spine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mg-spine canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  background: transparent !important;
+}
+
+/* ── Bảng cầu ────────────────────────────────────────────────────────────────────────── */
+/* Dùng ẢNH GỐC trong assets/dice_mini/cau/ — tên file chính là tổng điểm, và bộ ảnh tự phân
+   biệt sẵn: 3–10 viên TRẮNG (Xỉu), 11–18 viên ĐEN (Tài). Không tự tô màu bằng CSS nữa. */
+/* Cỡ viên theo CHIỀU CAO THANH, không theo bề ngang màn hình — thanh co giãn theo tỉ lệ nên
+   viên phải co theo nó mới luôn nằm cân trong lòng thanh. */
+.mg-cau-dot {
+  flex: 0 0 auto;
+  /* Bám prefab: viên 29px trên thanh 499px = 5.81%, nhưng BƯỚC chỉ 26.5px = 5.31% — tức các
+     viên hơi CHỒNG mép nhau, đó là chủ ý của bàn gốc chứ không phải xếp thưa có khe. Margin
+     âm 0.25% mỗi bên kéo bước về đúng 5.31%. */
+  /* % của con tính theo VÙNG TRONG PADDING của thanh (476.5), không phải cả ảnh nền (499) —
+     lấy nhầm mốc thì viên hụt gần 1px. 29/476.5 = 6.086%, chồng mép 2.5/476.5/2 = 0.262%. */
+  width: 6.086%;
+  margin: 0 -0.262%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-cau-dot img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Ô trống: giữ chỗ để các viên đã có luôn trải đều kín thanh, không dồn cụm. */
+.mg-cau-dot.empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Viên mới nhất nhảy lên xuống, đúng thông số tween của bàn gốc:
+   lên 25px trong 0.35s (cubicOut), rơi xuống 0.35s (cubicIn), lặp mãi.
+   25px trên viên 29px = 86% cỡ viên, nên dùng % để nhảy đúng biên độ ở mọi cỡ màn hình. */
+.mg-cau-dot.newest {
+  animation: mgCauHop 0.7s infinite;
+  z-index: 2; /* nhảy lên thì không bị viên bên cạnh che */
+}
+
+@keyframes mgCauHop {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1); /* cubicOut */
+  }
+  50% {
+    transform: translateY(-86%);
+    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19); /* cubicIn */
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.mg-cau-dot:hover,
+.mg-cau-dot:active {
+  transform: scale(1.25);
+}
+
+/* ── Bong bóng chi tiết một phiên ────────────────────────────────────────────────────── */
+#mg-cau-tip {
+  position: absolute;
+  display: none;
+  z-index: 30;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: rgba(6, 8, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Một dòng gọn: [viên đen/trắng] Tài 14(3,5,6) */
+#mg-cau-tip {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+#mg-cau-tip.on {
+  display: flex;
+}
+
+.mg-tip-ic {
+  width: 15px;
+  height: 16px;
+  flex: none;
+}
+
+#mg-cau-tip b.big {
+  color: #ff8a8a;
+}
+#mg-cau-tip b.small {
+  color: #9ecbff;
+}
+
+/* ── Chặn trình duyệt "kéo ra text/ảnh" ──────────────────────────────────────────────── */
+/* Kéo trên chữ TÀI/XỈU thì trình duyệt bôi đen chữ và lôi theo bóng ma của <img> — cử chỉ kéo
+   bàn bị cướp mất. Ba thứ phải tắt cùng lúc: chọn chữ, kéo ảnh, và menu giữ-lâu trên mobile. */
+#mg-panel,
+#mg-panel * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#mg-panel img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
+
+/* Ảnh nằm TRONG nút thì để nút nhận chạm, ảnh không chắn — đã pointer-events:none ở trên nên
+   e.target rơi đúng vào nút, closest() bắt được. */
+
+/* ── Nút tròn quanh bàn ──────────────────────────────────────────────────────────────── */
+/* Bám vị trí bàn gốc: X ở góc trên-phải, hai cụm chức năng ở hai bên dưới. Đặt tuyệt đối theo
+   % của bàn nên co giãn cùng bàn, không cần tính lại theo màn hình. */
+.mg-rbtn {
+  position: absolute;
+  width: 12%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 9;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-rbtn img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+}
+
+.mg-rbtn:active {
+  transform: scale(0.9);
+}
+
+/* Nút đóng: góc trên-phải, ngoài mép bàn một chút như bàn gốc. */
+#mg-btn-close {
+  top: 3%;
+  right: 4%;
+  width: 13%;
+}
+
+/* Hai cụm dọc hai bên. position:static cho nút bên trong để chúng xếp theo cột, không thì
+   .mg-rbtn absolute làm chúng chồng lên nhau. */
+/* NĂM NÚT CHỨC NĂNG — MỖI CÁI MỘT TOẠ ĐỘ RIÊNG.
+   Trước chúng nằm trong hai thẻ bọc flex xếp cột, nên chỉ nhích được cả cụm; muốn dời riêng
+   một nút là bó tay. Giờ mỗi nút absolute theo % của bàn: sửa top/left/right của đúng nút đó
+   là xong, không ảnh hưởng nút nào khác.
+   Số âm ở left/right là cố ý — nút nằm THÒ RA ngoài mép bàn như bàn gốc. */
+#mg-btn-history,
+#mg-btn-honors,
+#mg-btn-soicau,
+#mg-btn-guide,
+#mg-btn-chat {
+  /* Nhỏ hơn mốc 12% của .mg-rbtn — mốc đó là cỡ của nút Đóng. */
+  width: clamp(30px, 8.5vw, 42px);
+}
+
+#mg-btn-history {
+  left: 4%;
+  top: 3%;
+}
+
+#mg-btn-honors {
+  left: -3%;
+  bottom: 20%;
+}
+
+#mg-btn-soicau {
+  left: 4%;
+  bottom: -6%;
+}
+
+#mg-btn-guide {
+  right: -3%;
+  bottom: 20%;
+}
+
+#mg-btn-chat {
+  right: 4%;
+  bottom: -6%;
+}
+
+/* Chừa chỗ cho cụm nút thò ra hai bên bàn — nhưng CHỈ THU HẸP BÀN, không padding cả thân.
+   Padding cả thân thì thanh jackpot và thanh cầu cũng hẹp theo, và số jackpot 9 chữ số bị cắt
+   thành "163.371…". */
+#mg-table {
+  width: 88%;
+  overflow: visible;
+}
+
+/* ── Khung popup dùng chung (Vinh danh / Lịch sử / Chat / Hướng dẫn) ─────────────────── */
+/* Đè lên giữa cụm chứ không đẩy bảng dài ra — cụm nổi trên game đối tác, dài thêm là che thêm. */
+/* Neo theo MÀN HÌNH, không theo cụm bàn. Cụm cao theo nội dung nên popup nằm trong nó chỉ
+   được vài dòng — mà bảng vinh danh có tới 10 hạng, lịch sử còn dài hơn. */
+#mg-pop {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  /* GIỮ ĐÚNG TỈ LỆ ẢNH NỀN (750×1334). Trước đây ghim top/bottom rồi kéo ảnh cho vừa — hoạ tiết
+     kim cương bị méo thành hình thoi dẹt và dải header cũng sai tỉ lệ.
+     Bề ngang lấy giá trị NHỎ HƠN giữa "94% màn ngang" và "bề ngang suy từ 92% màn dọc" — nhờ
+     vậy khung luôn vừa cả hai chiều, máy dọc hay ngang đều không tràn. */
+  /* Đặt CẢ HAI chiều thay vì dùng aspect-ratio: aspect-ratio chỉ GỢI Ý chiều cao, nội dung
+     dài hơn là hộp cứ giãn ra — thân bảng cao 832px trong khung 627px, tràn hẳn ra ngoài thay
+     vì cuộn. Chiều cao cứng thì flex con mới kẹp lại và bật thanh cuộn.
+     Hai công thức là hai chiều của cùng một tỉ lệ, nên khung vẫn đúng 750:1334. */
+  /* BỀ NGANG ĐÚNG CỠ THIẾT KẾ GỐC: 750, bằng ảnh nền BG.png. Mọi thứ bên trong đều vẽ cho
+     khung này — scTable 611, bgSoiCauTong 737, bgItemDetails1 686, maskRs 684 — nên khung hẹp
+     hơn là tất cả co theo. Trước để 460, tức mọi ảnh trong popup chỉ còn 61% cỡ thật.
+     CHIỀU CAO do applyPopFit() đặt theo màn, không ghim 1334: chưa màn PC nào cao được ngần
+     ấy, mà thân popup vốn đã cuộn được nên không cần đủ cao.
+     Việc cho vừa màn hẹp cũng do applyPopFit() lo — cùng một luật với cụm bàn. Trước đây hai
+     chiều tính bằng vw/vh, mà trong WebView vw/vh là đơn vị design co giãn theo policy của
+     CanvasControl: build web và build native cho hai giá trị khác hẳn nhau, nên cùng một popup
+     lúc to lúc nhỏ. Số cố định thì không còn phụ thuộc môi trường nữa. */
+  width: 750px;
+  z-index: 720; /* trên cả cụm bàn (700) */
+  display: flex;
+  flex-direction: column;
+  /* Nền là ẢNH GỐC top/BG.png — nó đã có sẵn dải header sáng ở trên và hoạ tiết kim cương ở
+     thân, kèm viền mảnh. Nên bỏ hẳn nền màu, viền và blur tự vẽ trước đây.
+     LÓT THÊM MỘT LỚP ĐẶC phía dưới: ảnh chỉ đục 250/255, mà bàn Tài Xỉu ngay sau nó thì sáng —
+     2% lọt qua là đủ thấy mờ mờ chữ TÀI/XỈU xuyên lên. Màu lấy từ chính vùng thân của ảnh. */
+  background:
+    url('./assets/dice_mini/top/BG.png') center/100% 100% no-repeat,
+    #312950;
+  border-radius: 10px;
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.7);
+  /* KHÔNG overflow:hidden — nút đóng cố tình nhô ra ngoài mép trên-phải, hidden sẽ xén mất nửa
+     nút. Góc bo do chính ảnh nền lo; phần cuộn thì #mg-pop-body đã tự quản. */
+  overflow: visible;
+}
+
+#mg-pop[hidden] {
+  display: none;
+}
+
+/* Cao ĐÚNG bằng dải sáng có sẵn trong BG.png (95/1334 ≈ 7.1% chiều cao ảnh) — không thì chữ
+   tiêu đề nằm lệch khỏi dải, nhìn như hai lớp không ăn nhau.
+   Không kẻ đường viền dưới nữa: ảnh nền đã có sẵn mép phân cách. */
+#mg-pop-head {
+  position: relative;
+  flex: none;
+  /* Dải tiêu đề trong ảnh nền cao 6.67% khung (quét BG.png). Cho thanh nhỉnh hơn một chút để
+     chữ 46px và nút X 48px có chỗ, chấp nhận mép dưới lấn nhẹ sang thân. */
+  height: 8.4%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  /* Tiêu đề CĂN GIỮA. Nút đóng ghim tuyệt đối bên phải nên không kéo lệch tâm của tiêu đề —
+     để nó trong luồng flex thì chữ bị đẩy sang trái đúng bằng nửa bề rộng nút. */
+  justify-content: center;
+  /* Chừa hẳn chỗ nút X bên phải (42px + 6px lề) thay vì để tiêu đề căn giữa cả khung rồi
+     đè lên nó — ảnh "Danh Sách Thắng" rộng 279px, căn giữa 353px là chạm nút. */
+  padding: 0 60px 0 12px;
+}
+
+#mg-pop-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--mg-gold);
+  text-align: center;
+}
+
+/* Dùng ẢNH GỐC top/btnClose.png thay cho nút tròn tự vẽ.
+   Neo Ở TRONG góc trên-phải, KHÔNG nhô ra ngoài. Trước để top:-12% cho giống bàn gốc, nhưng
+   popup cao gần bằng màn nên nó bị đẩy dán đỉnh — nút nhô lên là chui khỏi màn hình, mất
+   luôn cách đóng. z-index để không bị thanh tiêu đề đè. */
+#mg-pop-close {
+  position: absolute;
+  /* Căn giữa theo CHIỀU CAO thanh tiêu đề thay vì ghim 6px từ đỉnh — ghim cứng thì tâm nút
+     thấp hơn tâm chữ 6px, nhìn lệch. */
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  z-index: 5;
+  width: 48px;
+  height: 49px;
+  padding: 0;
+  border: none;
+  background: url('./assets/dice_mini/top/btnClose.png') center/contain no-repeat;
+  font-size: 0; /* nuốt ký tự ✕ trong HTML, chỉ còn ảnh */
+  cursor: pointer;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#mg-pop-close:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+/* Màn chi tiết phiên: hai cửa CHIA ĐỀU chỗ còn lại của popup thay vì cao theo nội dung.
+   Ít dòng thì bảng ngắn lại và popup hở một khoảng trống to ở dưới; nhiều dòng thì mỗi bảng
+   tự cuộn trong nửa phần của mình. */
+#mg-pop-body[data-kind='detail'] {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+#mg-pop-body[data-kind='detail'] .dt-side {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#mg-pop-body[data-kind='detail'] .dt-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+#mg-pop-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Cuộn NGANG cho bảng lịch sử (7 cột ở cỡ chữ lớn không vừa khung). Các màn khác nội dung
+     luôn vừa nên thanh ngang không hiện. */
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Padding ngang chỉ 6px: biểu đồ soi cầu rộng 737 mà khung chỉ 750 — để 12px mỗi bên là còn
+     726, thiếu 11px và ảnh bị bóp lại. */
+  padding: 8px 6px;
+  font-size: 12.5px;
+  /* Cuộn trong popup không được kéo theo trang phía sau. */
+  overscroll-behavior: contain;
+}
+
+.mg-pop-loading,
+.mg-pop-empty {
+  padding: 22px 10px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Dòng danh sách (dùng chung vinh danh + lịch sử) ─────────────────────────────────── */
+.mg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mg-row:last-child {
+  border-bottom: none;
+}
+
+/* Vinh danh */
+.mg-rank {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.mg-rank.r1 {
+  background: linear-gradient(160deg, #ffd76e, #d99a12);
+  color: #3a2600;
+}
+.mg-rank.r2 {
+  background: linear-gradient(160deg, #e6e9ef, #9aa3b2);
+  color: #2b2f38;
+}
+.mg-rank.r3 {
+  background: linear-gradient(160deg, #e0a273, #a4632c);
+  color: #33190a;
+}
+
+.mg-rname {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mg-rmoney {
+  flex: none;
+  font-weight: 800;
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Chat ────────────────────────────────────────────────────────────────────────────── */
+.mg-chatrow {
+  padding: 4px 2px;
+  line-height: 1.45;
+  /* Tin dài phải xuống dòng, không được đẩy khung rộng ra. */
+  word-break: break-word;
+}
+
+.mg-chatrow b {
+  color: #ffd166;
+}
+.mg-chatrow.admin b {
+  color: #00fffc;
+}
+.mg-chatrow.admin span {
+  color: #ff8080;
+}
+
+/* Huy hiệu VIP dùng ẢNH GỐC (vip/v1..v50) thay cho nhãn tự vẽ — mỗi cấp một màu riêng, tự vẽ
+   thì mất hết phân biệt.
+   Ghim CHIỀU CAO, bề ngang tự theo: bộ ảnh không đều nhau (v1 36×35, v50 58×35, v20 lại 47×24)
+   nên ghim bề ngang là méo. */
+/* ĐÚNG CỠ ẢNH GỐC. Mỗi cấp VIP một kích thước riêng (v1 là 36×35, v20 là 47×24, v50 là 58×35)
+   nên không đặt được px cố định cho cả bộ — ghim chiều cao rồi để bề ngang tự suy như trước là
+   cấp nào cũng méo một kiểu. Để auto thì mỗi ảnh ra đúng cỡ của nó. */
+.mg-cvip {
+  width: auto;
+  height: auto;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ── Hướng dẫn ───────────────────────────────────────────────────────────────────────── */
+/* Dùng thẳng ảnh gốc hdtx.png. Ảnh cao gấp rưỡi khung nên thân tự cuộn dọc; bề ngang lấp đầy
+   để chữ trong ảnh đủ to đọc được. */
+.mg-guide-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Bảng Vinh danh ──────────────────────────────────────────────────────────────────── */
+/* ĐÚNG KÍCH CỠ GỐC của từng ảnh, không phóng cũng không ép về cùng chiều cao:
+     txtVinhDanh 168×28 · txtHistory 120×36 · txtGuide 178×41 · txtSoiCau 139×44
+     txtDetailsSession 219×37 · txtHisJackpot 224×41 · txtListWin 279×42
+   max-width chỉ là lưới an toàn cho màn hẹp — chỗ của nút X do #mg-pop-head chừa sẵn bằng
+   padding-right nên ảnh không bao giờ chui xuống dưới nút. */
+.mg-pop-titleimg {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* CĂN THEO THÂN CHỮ, không theo khung ảnh.
+   Đo alpha từng ảnh: thân chữ của cả 7 cái đều 23–25px, tức ở cỡ gốc chúng vốn ĐÃ đều nhau.
+   Cái lệch là chỗ chữ NẰM trong ảnh — ảnh nào chữ có dấu mũ thì phần trống dồn lên trên, ảnh
+   nào có dấu nặng thì dồn xuống dưới. Căn giữa theo khung ảnh nên chữ hoá ra cái cao cái thấp:
+     Vinh Danh chữ ở y 0..23 (sát trên)  ·  Soi Cầu chữ ở y 16..39 (sát dưới)
+   Bù đúng bằng khoảng lệch giữa tâm thân chữ và tâm ảnh thì bảy tiêu đề nằm cùng một hàng. */
+.mg-pop-titleimg[src$='txtVinhDanh.png'] {
+  transform: translateY(2.5px);
+}
+
+.mg-pop-titleimg[src$='txtHistory.png'] {
+  transform: translateY(3px);
+}
+
+.mg-pop-titleimg[src$='txtGuide.png'] {
+  transform: translateY(0.5px);
+}
+
+.mg-pop-titleimg[src$='txtSoiCau.png'] {
+  transform: translateY(-5.5px);
+}
+
+.mg-pop-titleimg[src$='txtHisJackpot.png'] {
+  transform: translateY(1px);
+}
+
+.mg-pop-titleimg[src$='txtListWin.png'] {
+  transform: translateY(0.5px);
+}
+
+.mg-pop-titleimg[src$='txtDetailsSession.png'] {
+  transform: translateY(-2px);
+}
+
+.mg-top-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 10px;
+  font-size: 17px; /* 11.5 × 1.5 */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Ba cột phải khớp giữa hàng tiêu đề và các dòng — dùng CÙNG bộ flex, không đặt rời mỗi nơi
+   một kiểu rồi chỉnh cho khớp bằng mắt.
+   Cột Hạng nới theo huy hiệu và chữ "TOP 10" đã to lên. */
+.mg-top-head span:nth-child(1),
+.mg-top-rank {
+  flex: 0 0 132px;
+}
+.mg-top-head span:nth-child(2),
+.mg-top-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mg-top-head span:nth-child(3),
+.mg-top-money {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+/* Dòng CAO GẤP ĐÔI, chữ to thêm 1.5 lần. */
+.mg-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 10px 10px;
+  min-height: 68px;
+  font-size: 19px; /* 12.5 × 1.5 */
+  /* Nền dòng THƯỜNG. Ba hạng đầu ghi đè bằng ảnh có viền màu ngay dưới. */
+  background: url('./assets/dice_mini/top/bgItem.png') center/100% 100% no-repeat;
+}
+
+.mg-top-row.r1 {
+  background-image: url('./assets/dice_mini/top/bgItemTop1.png');
+}
+.mg-top-row.r2 {
+  background-image: url('./assets/dice_mini/top/bgItemTop2.png');
+}
+.mg-top-row.r3 {
+  background-image: url('./assets/dice_mini/top/bgItemTop3.png');
+}
+
+.mg-top-rank {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Huy hiệu 7 cỡ RẤT khác nhau (icT1 79×51, icT7 37×37). Ghim mỗi chiều cao thì bề ngang mỗi
+   cái một khác, và chữ "TOP N" bắt đầu ở chỗ khác nhau từng dòng — nhìn răng cưa.
+   Ghim CẢ Ô cố định rồi để ảnh contain bên trong: ảnh không méo, mà mốc chữ thì thẳng hàng. */
+.mg-top-rank img {
+  flex: none;
+  width: 76px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.mg-top-rank b {
+  flex: 1 1 auto;
+  font-size: 17px; /* 11 × 1.5 */
+  font-weight: 800;
+  color: #fff;
+  white-space: nowrap;
+  /* Căn trái trong phần còn lại của cột — cùng một mốc cho cả 10 dòng. */
+  text-align: left;
+}
+
+/* Chữ to lên 1.5 lần thì tên dài không còn vừa một dòng — 6/10 tên bị cắt cụt.
+   Dòng đã cao gấp đôi nên tận dụng chiều cao đó: cho xuống TỐI ĐA 2 dòng rồi mới cắt.
+   Cắt tên người chơi là mất thông tin thật, không như cắt một nhãn trang trí. */
+.mg-top-name {
+  color: #fff;
+  line-height: 1.2;
+  overflow: hidden;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.mg-top-money {
+  font-weight: 800;
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Lịch sử: bảng 7 cột ─────────────────────────────────────────────────────────────── */
+/* CỠ CHỮ BẰNG BẢNG VINH DANH (19px / tiêu đề 17px).
+   Bảy cột ở cỡ đó cần ~650px — không có cách nào nhét vừa 353px, nên bảng CUỘN NGANG. Đây là
+   đánh đổi có ý thức: thu nhỏ chữ cho vừa thì mất đúng thứ vừa yêu cầu. */
+.mg-his {
+  font-size: 19px;
+  line-height: 1.25;
+  /* Rộng hơn khung → thân bật cuộn ngang. */
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Một bộ cột DÙNG CHUNG cho hàng tiêu đề và mọi dòng — khai hai nơi rồi chỉnh cho khớp bằng
+   mắt là kiểu gì cũng lệch khi nội dung đổi. */
+/* Cột ghim cứng theo nội dung DÀI NHẤT có thể có ở cỡ 19px — không dùng 1fr nữa vì bảng giờ
+   rộng hơn khung, fr sẽ ăn hết phần thừa và cột co giãn theo bề rộng cuộn. */
+.mg-his-head,
+.mg-his-row {
+  display: grid;
+  /* Cột KẾT QUẢ hẹp hẳn còn 84px nhờ xuống hai dòng — tiết kiệm 64px, kéo cột NHẬN vào gần
+     khung hơn hẳn.
+     Cột PHIÊN gấp đôi (80 → 160): mã phiên 6 chữ số kèm dấu # ở cỡ chữ 19px chật cứng trong
+     80px, chữ chạm sát hai mép. Tổng bảy cột thành 688, cộng khe và padding là 724 — vẫn nằm
+     trong thân popup 738 nên không sinh cuộn ngang. */
+  grid-template-columns: 108px 160px 52px 88px 84px 88px 108px;
+  gap: 4px;
+  align-items: center;
+  padding: 9px 6px;
+}
+
+.mg-his-head {
+  position: sticky;
+  top: -8px; /* bù padding-top của #mg-pop-body để không hở khe khi cuộn dọc */
+  z-index: 2;
+  background: rgba(20, 16, 40, 0.97);
+  font-size: 17px; /* bằng hàng tiêu đề bảng Vinh danh */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+  border-radius: 4px;
+}
+
+.mg-his-row {
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Sọc xen kẽ — bản Cocos cũng làm vậy (item.Index % 2). Nhiều cột số liền nhau mà không có
+   sọc thì mắt rất dễ đọc nhầm sang dòng bên cạnh. */
+.mg-his-row.alt {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.c-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px; /* nhỏ hơn một bậc: hai dòng ngày+giờ, để bằng 19px là dòng cao vống lên */
+}
+
+.c-time i {
+  display: block;
+  font-style: normal;
+}
+
+.c-ss {
+  color: #8fd3ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.c-gate {
+  font-weight: 800;
+}
+
+.c-gate.big {
+  color: #ff8a8a;
+}
+.c-gate.small {
+  color: #9ecbff;
+}
+
+.c-bet,
+.c-refund {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.c-rs {
+  color: #fff;
+  line-height: 1.15;
+}
+
+/* Dòng thứ hai: ba mặt xúc xắc, nhỏ hơn một bậc cho đỡ nặng mắt. */
+.c-rs i {
+  display: block;
+  font-style: normal;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Ăn tiền thì vàng, không ăn thì xám — nhìn lướt là biết ngay dòng nào thắng. */
+.c-win {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.c-win.w {
+  color: var(--mg-gold);
+}
+
+/* ── Chat: khối NẰM TRONG CỤM, ngay dưới bàn ─────────────────────────────────────────── */
+/* Không còn là popup nổi giữa màn hình. Nằm trong cụm nên KÉO BÀN LÀ NÓ ĐI THEO — popup thì
+   phải gắn ở body (transform của cụm phá position:fixed) và sẽ đứng yên khi bàn chạy đi.
+   Nền bgChat.png đã vẽ sẵn nhãn "CHAT" góc trên-trái và ô nhập tối bo tròn ở đáy; đo trên
+   chính ảnh (601×514): ô nhập nằm 86%–97% chiều cao, chừa 2% hai bên. */
+#mg-chat {
+  position: relative;
+  /* Không phóng to quá ảnh gốc; màn hẹp thì co đều, aspect-ratio giữ khỏi méo. */
+  width: min(601px, 100%);
+  aspect-ratio: 601 / 514;
+  margin: 8px auto 0;
+  background: url('./assets/dice_mini/chat/bgChat.png') center/100% 100% no-repeat;
+}
+
+#mg-chat[hidden] {
+  display: none;
+}
+
+/* Vùng tin nhắn: dưới nhãn CHAT (11%), trên ô nhập (84%). */
+#mg-chat-list {
+  position: absolute;
+  left: 3.5%;
+  right: 3.5%;
+  top: 11%;
+  /* Chạm mép trên ô nhập (89%) chừa một chút thở. */
+  bottom: 13%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  font-size: 25px; /* 12.5 × 2 */
+}
+
+/* Ô nhập đặt TRÙNG lên ô tối đã vẽ trong ảnh nền.
+   Đo lại trên chính ảnh, phóng to có vạch mốc: ô tối bo tròn nằm 89%–97% chiều cao, chừa 1%
+   hai bên. Trước đây tao để 86% nên chữ và nút máy bay nhô CAO HƠN ô 3% — đúng cái nhìn ra
+   là lệch. */
+#mg-chat-bar {
+  position: absolute;
+  left: 1%;
+  right: 1%;
+  /* Nới cao hơn để chữ 26px không chạm mép ô tối vẽ sẵn trong ảnh nền: dải đó chạy từ 89% tới
+     97% chiều cao khung chat. */
+  top: 87.5%;
+  height: 11%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px 0 14px;
+}
+
+#mg-chat-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #fff;
+  font-family: inherit;
+  /* Gấp đôi: 13 → 26. Cũng vừa đủ vượt mốc 16px mà iOS lấy làm ngưỡng tự phóng cả trang khi
+     chạm vào ô nhập — trước ở 13px là bấm vào chat một cái bố cục lệch hẳn. */
+  font-size: 26px;
+  /* Để <input> TỰ căn giữa theo chiều cao — nó vốn làm đúng việc đó khi không bị can thiệp.
+     Trước ghim line-height: 57px cho bằng chiều cao ô, nhưng ô cao theo % khung chat nên con
+     số cứng đó chỉ đúng ở một cỡ; lệch đi là chữ trồi lên trên. */
+  line-height: normal;
+}
+
+#mg-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Nút gửi = máy bay giấy, không phải chữ "Gửi". */
+#mg-chat-send {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: url('./assets/dice_mini/chat/btnSendChat.png') center/contain no-repeat;
+  font-size: 0;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+#mg-chat-send:active {
+  transform: scale(0.88);
+}
+
+/* Đây mới là chỗ quyết cỡ chữ từng dòng chat — nó đặc hiệu hơn #mg-chat-list nên đè lên cỡ
+   khai ở đó. Gấp đôi: 12.5 → 25. */
+#mg-chat .mg-chatrow {
+  font-size: 25px;
+  padding: 3px 2px;
+}
+
+/* ── Lịch sử nổ hũ ───────────────────────────────────────────────────────────────────── */
+/* Bấm hai thanh hũ trên đỉnh bàn để mở. Dùng <table> chứ không grid như bảng lịch sử cược:
+   ở đây chỉ 4 cột và bề rộng vừa khung, không phải ghim cột để cuộn ngang. */
+#mg-jp {
+  cursor: pointer;
+}
+
+.mg-jph-stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* KHÔNG cho xuống dòng: cả hai bên phải nằm cùng một hàng. Cỡ xúc xắc bên dưới đã tính để
+     vừa đúng bề ngang này. */
+  flex-wrap: nowrap;
+  gap: 10px;
+  padding: 8px 2px 12px;
+  font-size: 17px; /* bằng hàng tiêu đề bảng Vinh danh */
+  font-weight: 700;
+}
+
+/* Nhãn "Nổ Tài" / "Nổ Xỉu" dùng ẢNH GỐC trong atlas popup, không gõ lại bằng chữ.
+   ĐÚNG CỠ ẢNH: txtNoTai 82×29, txtNoXiu 86×30 — chênh 4px nên khai riêng từng cái thay vì ép
+   chung một chiều cao rồi để bề ngang tự suy (cách đó làm hai nhãn lệch nhau). */
+.mg-jph-side {
+  display: block;
+}
+
+.mg-jph-grp:first-child .mg-jph-side {
+  width: 82px;
+  height: 29px;
+}
+
+.mg-jph-grp:last-child .mg-jph-side {
+  width: 86px;
+  height: 30px;
+}
+
+/* Một bên = nhãn + ba xúc xắc + %; cả cụm xuống dòng cùng nhau. */
+.mg-jph-grp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.mg-jph-stat b {
+  color: var(--mg-gold);
+}
+
+.mg-jph-dice {
+  display: inline-flex;
+  gap: 2px;
+}
+
+/* GIỮ MỘT DÒNG. Ảnh gốc là 92×92, nhưng để nguyên cỡ đó thì cả hàng cần ~856px trong khi
+   thân popup chỉ 738 — cụm bị bẻ thành hai dòng. Đo phần cố định (hai nhãn 168 + hai số % 100
+   + các khe) ra 302, còn 436 cho sáu con, tức 68px mỗi con là vừa và còn dư một chút. */
+.mg-jph-dice img {
+  width: 68px;
+  height: 68px;
+}
+
+.mg-jph {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 19px; /* bằng dòng bảng Vinh danh */
+  text-align: center;
+}
+
+.mg-jph th {
+  position: sticky;
+  top: -8px; /* bù padding-top của #mg-pop-body, như bảng lịch sử cược */
+  z-index: 2;
+  background: rgba(20, 16, 40, 0.97);
+  padding: 9px 2px;
+  font-size: 17px; /* bằng hàng tiêu đề bảng Vinh danh */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.mg-jph td {
+  /* Đệm ngang mỏng: ở cỡ chữ bằng bảng Vinh danh, 4px mỗi bên × 4 cột là đủ đẩy bảng rộng
+     hơn khung và cắt mất nút XEM THÊM. */
+  padding: 10px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Sọc xen kẽ, giống bản Cocos (index % 2) — nhiều cột số liền nhau rất dễ đọc nhầm dòng. */
+.mg-jph tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.mg-jph .t {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px; /* nhỏ hơn một bậc: ô này hai dòng ngày+giờ */
+  white-space: nowrap;
+}
+
+/* Ngày trên, giờ dưới — <i> chỉ để xuống dòng, không phải chữ nghiêng. */
+.mg-jph .t i,
+.mg-jph .rs i {
+  display: block;
+  font-style: normal;
+}
+
+/* Kết quả: "NỔ TÀI" dòng trên, số người trúng dòng dưới. */
+.mg-jph .rs {
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.mg-jph b.big {
+  color: #ff7f7f;
+}
+
+.mg-jph b.small {
+  color: #fff;
+}
+
+.mg-jph .acc {
+  color: #7dff80;
+}
+
+.mg-jph .gold {
+  color: var(--mg-gold);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.mg-jph-more {
+  padding: 7px 9px;
+  border: none;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #4fd06a, #218c39);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mg-jph-more:active {
+  transform: scale(0.94);
+}
+
+/* ── Danh sách thắng của MỘT lần nổ ──────────────────────────────────────────────────── */
+.mg-jpu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 6px 12px;
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mg-jpu-head b {
+  color: #7dff80;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mg-pop-retry {
+  margin-top: 10px;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #6a5cff, #3a2fa8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ── Soi cầu ─────────────────────────────────────────────────────────────────────────── */
+/* Lưới và nhãn trục đều nằm SẴN trong ảnh gốc (scTable / bgSoiCauTong / bgSoiCauLe), nên ở đây
+   không vẽ lại đường kẻ nào — chỉ đặt nội dung lên đúng ô. */
+.sc-head {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 6px;
+  font-size: 22px; /* 15 × 1.5 */
+  font-weight: 800;
+}
+
+.sc-head span {
+  padding: 7px 26px;
+}
+
+.sc-head .b {
+  color: #fff;
+  background: linear-gradient(90deg, #6a3bd6, #9a5cff);
+  border-radius: 14px 0 0 14px;
+}
+
+.sc-head .s {
+  color: #d8d8e6;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 0 14px 14px 0;
+}
+
+/* scTable.png: lưới trong ảnh đúng 20 cột × 6 hàng, trải gần kín ảnh (đo: đường kẻ từ 0.5 đến
+   608.5 trên 611, và 0.5 đến 183.5 trên 186). Nên chỉ cần phủ ảnh rồi chia lưới đều là khớp. */
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  /* ĐÚNG CỠ ẢNH GỐC scTable.png (611×186). Trước dùng width:100% + aspect-ratio nên nó co giãn
+     theo khung: khung hẹp thì lưới bé lại, khung rộng thì phóng to nhoè. Khung popup giờ cố định
+     750 và được scale nguyên khối, nên bên trong cứ để px gốc là chuẩn ở mọi màn. */
+  width: 611px;
+  height: 186px;
+  margin: 0 auto;
+  background: url('./assets/dice_mini/popup/scTable.png') center/100% 100% no-repeat;
+}
+
+.sc-cell {
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  /* Ô chỉ rộng bằng 1/20 khung (~16px) nên đây đã là cỡ chữ lớn nhất còn vừa ô. Muốn to hơn
+     nữa thì phải cho lưới rộng hơn khung và cuộn ngang — mà như vậy là lệch ảnh nền. */
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 0;
+}
+
+/* Tài = chữ vàng trần; Xỉu = chữ trắng có vòng tròn, đúng như updateAbove tô màu. */
+.sc-num .sc-cell.b {
+  color: #ffde2a;
+}
+
+.sc-num .sc-cell.s {
+  color: #fff;
+}
+
+.sc-num .sc-cell.s::before {
+  content: '';
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+.sc-num .sc-cell {
+  position: relative;
+}
+
+.sc-ball .sc-cell img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+}
+
+/* Ô mới nhất — bàn gốc cũng chuyển khung focus sang ô cuối. */
+.sc-ball .sc-cell.last {
+  box-shadow: inset 0 0 0 2px var(--mg-gold);
+  border-radius: 50%;
+}
+
+.sc-title {
+  margin: 14px 0 8px;
+  text-align: center;
+  font-size: 22px; /* 15 × 1.5 */
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sc-title .b {
+  color: #ff7f7f;
+}
+
+.sc-title .s {
+  color: #7fd4ff;
+}
+
+.sc-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+/* Nút bật/tắt một đường. Tắt thì mờ đi và gạch ngang chấm màu, để thấy ngay đường nào đang ẩn. */
+.sc-tg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px; /* 13 × 1.5 */
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sc-tg i {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+}
+
+.sc-tg:not(.on) {
+  opacity: 0.4;
+}
+
+.sc-tg:not(.on) i {
+  filter: grayscale(1);
+}
+
+.sc-tg:active {
+  transform: scale(0.95);
+}
+
+/* Ảnh nền mang lưới + nhãn trục; SVG phủ đúng lên nó nhờ viewBox = kích thước ảnh. */
+.sc-chart {
+  position: relative;
+  /* Đúng cỡ bgSoiCauTong.png / bgSoiCauLe.png — 737×187 và 733×187, chênh 4px không nhìn ra. */
+  width: 737px;
+  height: 187px;
+  /* Bi ở hàng trên cùng (tổng 18 / xúc sắc 6) nằm NGAY TRÊN đường kẻ đầu, nên nửa trên của nó
+     thò ra ngoài khung ảnh. Cắt là mất nửa bi — phải cho tràn, và chừa lề trên cho nó. */
+  margin: 12px auto 16px;
+  overflow: visible;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.sc-chart svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sc-pl {
+  fill: none;
+  stroke: #f5c451;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* ── Chi tiết phiên ──────────────────────────────────────────────────────────────────── */
+.dt-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 0 4px;
+}
+
+.dt-dice {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.dt-dice img {
+  width: 34px;
+  height: 34px;
+}
+
+.dt-sum {
+  font-size: 36px; /* 24 × 1.5 */
+  font-weight: 900;
+  color: #7dff80;
+}
+
+.dt-arrow {
+  border: none;
+  background: none;
+  padding: 4px 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dt-arrow img {
+  width: 30px;
+  height: auto;
+  display: block;
+}
+
+/* arr.png vẽ sẵn hướng PHẢI, nên nút lùi mới là cái phải lật. */
+.dt-arrow.prev img {
+  transform: scaleX(-1);
+}
+
+.dt-arrow:active {
+  transform: scale(0.9);
+}
+
+.dt-ss {
+  text-align: center;
+  font-size: 25px; /* 17 × 1.5 */
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 10px;
+}
+
+.dt-ss b {
+  color: var(--mg-gold);
+}
+
+.dt-side {
+  margin-bottom: 12px;
+}
+
+/* Mỗi cửa cuộn trong khung của nó. Không giới hạn chiều cao thì bảng TÀI dài đẩy khối XỈU
+   xuống tít dưới, phải cuộn cả popup rất lâu mới thấy. */
+.dt-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 6px;
+  scrollbar-width: thin;
+}
+
+.dt-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dt-scroll::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* HÀNG TIÊU ĐỀ DÍNH LẠI KHI CUỘN.
+   Dính ở <tr> chứ không ở <th>: ảnh nền đặt trên <tr>, mà trước đây chỉ <th> được sticky nên
+   cái mang nền không dính theo — tiêu đề thành trong suốt và dòng dữ liệu cuộn xuyên qua,
+   chữ chồng lên nhau. */
+.dt-tb thead tr {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Dòng tổng của một cửa. Nền là ẢNH GỐC maskRs.png (684×49) — prefab đặt txt_Tai/txt_Xiu
+   lên chính dải này (node taiBg / xiuBg). */
+.dt-sum-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  aspect-ratio: 684 / 49;
+  background: url('./assets/dice_mini/popup/maskRs.png') center/100% 100% no-repeat;
+  font-size: 22px; /* 15 × 1.5 */
+}
+
+/* Chữ TÀI / XỈU là ảnh, không gõ lại. */
+.dt-name {
+  flex: none;
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.dt-sum-row span {
+  flex: 1 1 auto;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dt-sum-row i {
+  flex: none;
+  min-width: 96px;
+  text-align: right;
+  font-style: normal;
+  font-weight: 800;
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.dt-tb {
+  /* BỐN CỘT ĐỀU NHAU. Ảnh nền bgItemDetails1 chia sẵn 4 ô bằng nhau, mà bảng thì để cột co
+     theo nội dung — đo ra 173/245/187/134, nên vạch ngăn trong ảnh không trùng mép cột và
+     nhìn lệch hẳn. table-layout:fixed ép mỗi cột đúng 1/4, khớp luôn với ảnh. */
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-size: 22px; /* 15 × 1.5 */
+  text-align: center;
+}
+
+/* Hàng tiêu đề TỰ TÔ, không dùng ảnh nữa.
+   bgItemDetails1.png là dải 686×56 chia sẵn bốn ô, mà bảng thì rộng theo khung (727) — ảnh bị
+   kéo giãn nên vạch ngăn trong ảnh lệch khỏi mép cột thật, căn kiểu gì cũng không khớp. Vẽ
+   thẳng bằng CSS thì vạch nằm đúng biên cột, và mảng đen đặc luôn nên lúc hàng dính lại khi
+   cuộn cũng không bị dòng dữ liệu hiện xuyên lên. */
+.dt-tb thead tr {
+  /* ĐỤC HOÀN TOÀN, không dùng rgba. Màu này = đen 55% trộn sẵn với nền popup #312950, tức
+     nhìn y hệt dải cũ khi bảng đứng yên — nhưng vì đục nên lúc hàng dính lại và dữ liệu chạy
+     bên dưới thì không còn hiện xuyên lên nữa. Để rgba dù 0.55 hay 0.9 đều vẫn lọt chữ. */
+  background: #181427;
+}
+
+.dt-tb th {
+  padding: 9px 8px;
+  /* Vạch ngăn giữa các ô — thay cho vạch vẽ sẵn trong ảnh cũ. Nằm đúng biên cột vì chính nó
+     là viền của ô. */
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  /* Một dòng: để tự ngắt thì "THỜI GIAN" và "TRẢ LẠI" vỡ đôi, hàng tiêu đề cao gấp đôi và
+     ảnh nền bgItemDetails1 bị kéo giãn theo. */
+  white-space: nowrap;
+  font-size: 19px; /* 13 × 1.5 */
+  font-weight: 700;
+  color: var(--mg-gold);
+}
+
+/* Nút sắp xếp: chữ tiêu đề kèm mũi tên dropdown.png, bấm để đảo chiều. */
+.dt-sortbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dt-sort {
+  width: 18px;
+  flex: none;
+  height: auto;
+  /* dropdown.png trỏ XUỐNG; ngửa lên cho khớp mũi tên ^ của bàn gốc. */
+  transform: rotate(180deg);
+}
+
+.dt-sortbtn:active {
+  transform: scale(0.95);
+}
+
+.dt-tb td {
+  padding: 9px 8px;
+  /* Cột cố định 1/4 nên tên dài phải cắt gọn, không thì nó đẩy vỡ cả hàng. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.dt-tb td:last-child,
+.dt-tb th:last-child {
+  border-right: none;
+}
+
+.dt-tb tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.dt-tb .gold {
+  color: var(--mg-gold);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dòng của chính người chơi — bàn gốc cũng tô xanh lá (134,255,16). */
+.dt-tb .me {
+  color: #86ff10;
+  font-weight: 800;
+}
+
+.dt-empty {
+  padding: 16px 0;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   RIÊNG CHUỘT (web PC): CỤM BÀN Ở ĐÚNG KÍCH CỠ ẢNH GỐC.
+
+   table.png là 673×347, nhưng #mg-table bị ghim max-width 520px — tức cả mặt bàn co còn 77%.
+   Mọi thứ nằm trong bàn đều đặt bằng % đo từ prefab theo tỉ lệ bàn, nên chúng co theo y hệt:
+   không cái nào méo, nhưng cái nào cũng nhỏ hơn ảnh gốc. Trả bàn về 673 là tất cả tự về đúng
+   cỡ native, KHÔNG phải chỉnh tay từng phần tử.
+
+   Hai thanh hũ thì khác: chúng chia bề ngang của hàng (flex:1) chứ không theo bàn, nên phải
+   khai thẳng cỡ ảnh. Không đụng tới ở base vì trên điện thoại 255+253+6 = 514px sẽ tràn ra
+   ngoài cụm — chỗ đó vẫn cần chia theo hàng.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   CỠ GỐC CỦA BỘ ẢNH — DÙNG CHUNG CHO MỌI NƠI.
+
+   Khối này trước nằm trong @media (hover: hover) nên chỉ PC được hưởng, còn điện thoại rơi
+   về mấy giá trị clamp() theo vw — mỗi phần tử co theo một luật riêng nên tỉ lệ giữa bàn,
+   chữ và nút vỡ hết.
+   Nay applyTransform() lo việc cho vừa màn bằng MỘT hệ số áp lên cả cụm, nên bố cục chỉ cần
+   đúng một bản: đúng cỡ ảnh gốc. Máy nào cũng thấy cùng một hình, chỉ khác độ lớn.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+/* Bàn chiếm 88% bề ngang thân (chừa chỗ cho cụm nút thò ra hai bên — xem #mg-table ở trên),
+   nên muốn MẶT BÀN đúng 673 thì THÂN phải là 673/0.88 ≈ 765. Đặt thẳng 673 ở đây là bàn chỉ
+   ra 592, vẫn thiếu đúng 12%.
+   min() để màn PC hẹp hơn thế vẫn co lại được thay vì tràn ngang. */
+#mg-panel {
+  width: min(96vw, calc(673px / 0.88));
+}
+
+#mg-table {
+  max-width: 673px;
+}
+
+/* Cỡ thật của bg_JP_1.png và bg_JP_2.png. aspect-ratio thành thừa khi đã có cả w lẫn h. */
+.mg-jp-bar {
+  flex: 0 0 auto;
+}
+
+#mg-jp1 {
+  width: 255px;
+  height: 68px;
+  aspect-ratio: auto;
+}
+
+#mg-jp2 {
+  width: 253px;
+  height: 59px;
+  aspect-ratio: auto;
+}
+
+/* HAI THANH SÁT NHAU, SÁT MẶT BÀN.
+   Bàn bo tròn hai đầu: đẩy hai thanh ra hai mép thì chúng đứng ngay chỗ mặt bàn cong xuống,
+   nhìn như bị hẫng một khoảng dù hộp đã chạm nhau. Dồn vào giữa là chúng nằm trên phần cao
+   nhất của bàn.
+   table.png chỉ có 4px trong suốt ở mép trên, nên lùi đúng 4px là mép thanh chạm mặt bàn
+   thật chứ không phải chạm rìa ảnh.
+   Chỉ làm ở PC: trên điện thoại hai thanh vẫn chia hết hàng. */
+#mg-jp {
+  width: 673px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: -4px;
+  justify-content: center;
+}
+
+/* Khay chọn mức cược cũng bám mép bàn. Nó là con của thân (765) chứ không của bàn (673) nên
+   thò ra 46px mỗi bên — nhìn rộng hơn hẳn cái bàn nó phục vụ. */
+/* Khay rộng 718 chứ không bám mép bàn (673) nữa: bốn nút ở CỠ ẢNH GỐC chiếm 4×175 = 700, cộng
+   ba khe 6px là 718, cộng viền và padding nữa. Ép về 673 là nút phải co lại, tức mất đúng cái
+   "đúng size" vừa đặt. 718 vẫn nhỏ hơn thân cụm (765) nên không thò ra ngoài. */
+#mg-tray {
+  width: 736px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Bốn chỗ còn lại không nằm trong lưới % của bàn nên không tự về native: chúng lấy bề rộng
+   theo ô chứa và chiều cao theo padding+cỡ chữ. Khai thẳng cỡ ảnh gốc cho từng cái.
+   bgBoxBet.png 176×45 — trước render 174.4×24, tức thấp gần một nửa. */
+.mg-betbtn {
+  width: 176px;
+  height: 45px;
+  padding: 0;
+}
+
+/* bgQuantity.png 77×29 — trước render 58×19. */
+.mg-users {
+  width: 77px;
+  height: 29px;
+}
+
+/* btnSendChat.png 47×47 — trước render 34×34. */
+#mg-chat-send {
+  width: 47px;
+  height: 47px;
+}
+
+/* Cỡ chữ trên bàn. Bàn PC giờ cố định 673px nên đặt px thẳng được, không cần clamp theo
+   màn. Nhân từ cỡ đang chạy: 54 → 81 (×1.5), 11 → 22 (×2), 12 → 24 (×2). */
+/* ĐỒNG HỒ ĐẾM NGƯỢC vẽ bằng fontDiceMini.png — bộ chữ số riêng của bản gốc, ảnh 512×512.
+   Chỉ áp khi đang hiện SỐ: bộ này không có ký tự nào ngoài 0-9, nên hai trạng thái chờ ('…'
+   và '--') vẫn là chữ thường, và dòng font-size dưới đây phục vụ đúng hai trạng thái đó. */
+#mg-count {
+  font-size: 81px;
+}
+
+#mg-count.bmtime {
+  font-size: 0;
+  line-height: 0;
+  white-space: nowrap;
+  /* TO GẦN BẰNG Ô TRÒN.
+     Chữ gốc cao 129, hai chữ số rộng 175 → đường chéo 217px, mà ô tròn chỉ 202px: để nguyên
+     cỡ là cụt bốn góc. Trần lý thuyết là 202/217 = 0.929; lấy 0.88 để chừa một khoảng thở
+     giữa số và vành, ra 154×114 (chéo 191) — chiếm 56% đường kính, đúng cỡ bàn gốc. */
+  transform: scale(0.88);
+}
+
+#mg-count.bmtime i {
+  display: inline-block;
+  background-image: url('./assets/dice_mini/font/fontDiceMini.png');
+  background-repeat: no-repeat;
+  vertical-align: top;
+}
+
+.mg-users {
+  font-size: 22px;
+}
+
+/* Chữ trên nút bớt lấn: 24 × 0.8 = 19.2. Hai con số tiền quanh nút mới là thứ người chơi
+   nhìn, nên chúng gấp đôi: tổng cược của cửa 13 → 26, tiền mình đã đặt 12 → 24. */
+.mg-betbtn {
+  font-size: 19.2px;
+}
+
+/* Bộ chữ vẽ ở đúng cỡ ảnh gốc (số cao 25px) nên không có gì để chỉnh cỡ nữa — trước đây
+   dòng này ép font-size cho chữ thường. */
+
+/* Bộ chữ ảnh vẽ ở đúng cỡ gốc nên không còn cỡ chữ để chỉnh. */
+
+#mg-session {
+  font-size: 24px;
+}
+
+/* SÁU NÚT TRÒN Ở ĐÚNG CỠ ẢNH GỐC.
+   Không cái nào vuông (51×53, 55×57, 55×56, 50×52) mà .mg-rbtn lại ép aspect-ratio:1 và
+   width theo % — nên phải khai cả w lẫn h, và tắt aspect-ratio đi. */
+.mg-rbtn {
+  aspect-ratio: auto;
+}
+
+#mg-btn-history,
+#mg-btn-honors,
+#mg-btn-guide {
+  width: 51px;
+  height: 53px;
+}
+
+#mg-btn-soicau {
+  width: 55px;
+  height: 57px;
+}
+
+#mg-btn-chat {
+  width: 55px;
+  height: 56px;
+}
+
+#mg-btn-close {
+  width: 50px;
+  height: 52px;
+}
+
+/* Đồng hồ pha trả thưởng gấp đôi: chữ 15 → 30, và cả cái vỏ phải nhân theo cùng hệ số,
+   không thì số to ra mà viên thuốc quanh nó vẫn bó nguyên cỡ cũ. */
+#mg-mini-timer {
+  min-width: 68px;
+  padding: 4px 18px;
+  border-radius: 22px;
+  font-size: 30px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   RIÊNG MÀN CẢM ỨNG (điện thoại / máy tính bảng). PC không dính khối này.
+
+   Phân biệt bằng `pointer: coarse` + `hover: none` chứ không theo bề ngang: laptop màn nhỏ
+   vẫn là chuột, còn máy tính bảng màn rộng vẫn là ngón tay.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  /* Cụm giữ NGUYÊN bố cục cỡ gốc như PC; việc cho vừa màn do applyTransform() trong JS lo
+     bằng một hệ số duy nhất. Trước đây chỗ này bóp bề ngang cụm, mà bên trong lại còn một
+     mớ cỡ chữ và cỡ nút bóp theo luật khác — mỗi thứ co một kiểu nên tỉ lệ giữa chúng vỡ,
+     đó mới là cái "nhìn xấu", chứ không riêng chuyện to hay nhỏ. */
+  #mg-panel {
+    width: calc(673px / 0.88);
+  }
+
+  /* Khối này từng chứa cả tá cỡ chữ và cỡ khung riêng cho điện thoại. Gần như bỏ hết: cụm bàn
+     và popup giờ giữ nguyên bố cục cỡ gốc rồi thu lại bằng MỘT hệ số, nên không còn gì phải
+     khai riêng theo màn nữa. */
+}
+
+/* ĐIỆN THOẠI XOAY NGANG: khung chat lùn còn một nửa.
+   Chat nối dưới bàn, cao theo tỉ lệ ảnh là 514 — trên màn ngang chỉ cao 390 thì riêng nó đã
+   vượt cả màn. Ép tỉ lệ xuống một nửa chiều cao (601:257); nền vẽ 100% 100% nên chỉ dẹt đi
+   chứ không lệch, còn ô nhập neo theo % nên vẫn nằm đúng chỗ.
+   Chỉ ngón tay, không đụng PC: cửa sổ trình duyệt lúc nào cũng "ngang". */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  #mg-chat {
+    aspect-ratio: 601 / 257;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+   CHỮ TRONG POPUP — font và cỡ thống nhất.
+
+   Đặt Ở CUỐI FILE để thắng mọi cỡ chữ khai rải rác phía trên (17/19/22/16px…). Mấy con số đó
+   là dấu vết của thời khung popup còn hẹp 460; giờ khung đúng 750 nên chữ về một cỡ chung.
+
+   Loại trừ hai thứ: phần tử đặt font-size:0 (chúng dùng cỡ 0 để nuốt ký tự hoặc để xếp ảnh
+   sát nhau, ép 25px là hỏng) và ảnh — ảnh không có chữ.
+   ═══════════════════════════════════════════════════════════════════════════════════════ */
+#mg-pop {
+  font-family: 'ForgottenFuturist', system-ui, sans-serif;
+}
+
+#mg-pop-title {
+  font-family: 'ForgottenFuturistBd', system-ui, sans-serif;
+  font-size: 26px;
+}
+
+#mg-pop-body,
+#mg-pop-body *:not(img):not(svg):not(svg *) {
+  font-size: 25px;
+}
+
+/* Trả lại cỡ 0 cho những chỗ cố ý dùng nó. */
+#mg-pop-close,
+#mg-pop-body .bmnum {
+  font-size: 0;
+}
+
+/* Số người mỗi cửa và chữ ĐẶT CƯỢC dùng bản ĐẬM của font gốc.
+   Đặt cuối file để thắng font-family khai ở #mg-panel (font hệ thống) — cụm bàn không kế thừa
+   font của popup, nên phải chỉ đích danh. */
+/* Ô bạch thủ đang hiện tiền — cùng cách đánh dấu với hai cửa lớn. */
+.mg-bt-cell.co-tien .mg-bt-money {
+  color: var(--mg-gold);
+  font-weight: 900;
+}
+
+/* Nút cửa khi ĐANG HIỆN TIỀN (người chơi vừa bấm chip) — vàng như con số, để phân biệt ngay
+   với trạng thái còn là chữ "ĐẶT CƯỢC". */
+.mg-betbtn.co-tien {
+  color: var(--mg-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.mg-users,
+.mg-betbtn,
+/* Mã phiên trên mép bàn — bản ĐẬM cho dễ đọc trên nền bàn nhiều hoạ tiết. */
+#mg-session {
+  font-family: 'ForgottenFuturistBd', system-ui, sans-serif;
+}
+
+/* Bong bóng "Tài 12(6,5,1)" khi rê/chạm viên cầu — bản THƯỜNG. Nó là dòng thông tin phụ, để
+   đậm như mã phiên thì tranh mất chú ý với chính con số trên bàn. */
+#mg-cau-tip {
+  font-family: 'ForgottenFuturist', system-ui, sans-serif;
+  /* Gấp đôi: 12 → 24. Cả cái vỏ nhân theo cùng hệ số, không thì chữ to ra mà bong bóng vẫn
+     bó nguyên cỡ cũ. */
+  font-size: 24px;
+  padding: 14px 22px;
+  border-radius: 20px;
+  gap: 10px;
+}
+
+/* Viên tròn trong bong bóng cũng gấp đôi cho cân với chữ. */
+#mg-cau-tip .mg-tip-ic {
+  width: 30px;
+  height: 32px;
+}
+
+/* Dòng đầu popup Danh Sách Thắng (#26703 - ngày giờ · tiền nổ) và hàng tiêu đề Top/Vinh
+   Danh/Tiền Thắng — dùng bản ĐẬM của font gốc, đây là hai dòng nhấn của màn này. */
+.mg-jpu-head,
+.mg-jpu-head b,
+.mg-top-head {
+  font-family: 'ForgottenFuturistBd', system-ui, sans-serif;
+}

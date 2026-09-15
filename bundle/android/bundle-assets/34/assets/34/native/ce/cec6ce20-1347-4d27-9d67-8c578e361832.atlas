@@ -1,0 +1,13 @@
+
+jackpot_sieulon.png
+size: 236,236
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+JP_sieulon
+  rotate: false
+  xy: 2, 16
+  size: 232, 218
+  orig: 234, 220
+  offset: 1, 1
+  index: -1

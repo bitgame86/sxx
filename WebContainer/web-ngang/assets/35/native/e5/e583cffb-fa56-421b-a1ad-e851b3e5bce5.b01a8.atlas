@@ -1,0 +1,34 @@
+
+btnauto.png
+size: 295,126
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Auto
+  rotate: true
+  xy: 252, 29
+  size: 59, 25
+  orig: 59, 25
+  offset: 0, 0
+  index: -1
+arr
+  rotate: true
+  xy: 252, 90
+  size: 34, 41
+  orig: 34, 41
+  offset: 0, 0
+  index: -1
+btnauto
+  rotate: false
+  xy: 2, 2
+  size: 123, 122
+  orig: 123, 122
+  offset: 0, 0
+  index: -1
+mbtn
+  rotate: false
+  xy: 127, 2
+  size: 123, 122
+  orig: 123, 122
+  offset: 0, 0
+  index: -1

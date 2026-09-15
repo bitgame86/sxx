@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <link rel="preload" as="image" href="splash.40347.png">
+    <link rel="preload" as="style" href="style-mobile.55122.css">
+    <link rel="preload" as="script" href="cocos2d-js-min.955ce.js">
+    <link rel="preload" as="script" href="physics-min.ad9a7.js">
+
+    <title>SXXBET - Cổng game Nude Casino đổi thưởng tiền thật uy tín nhất</title>
+
+    <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+    <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1" />
+
+    <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <!-- PWA Important -->
+    <meta name="theme-color" content="#000000">
+    <link rel="icon" href="favicon.139c3.ico" />
+    <!-- force webkit on 360 -->
+    <meta name="renderer" content="webkit" />
+    <meta name="force-rendering" content="webkit" />
+    <!-- force edge on IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <!-- force full screen on some browser -->
+    <meta name="full-screen" content="yes" />
+    <meta name="x5-fullscreen" content="true" />
+    <meta name="360-fullscreen" content="true" />
+
+    <!-- force screen orientation on some browser -->
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="x5-orientation" content="portrait">
+    <meta name="x5-page-mode" content="app">
+
+    <!--fix fireball/issues/3568 -->
+    <!--<meta name="browsermode" content="application">-->
+
+    <!--<link rel="apple-touch-icon" href=".png" />-->
+    <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+    <link rel="stylesheet" type="text/css" href="style-mobile.55122.css" />
+    <link rel="stylesheet" type="text/css" href="style.a593c.css" />
+
+    <script>
+        // Lock portrait orientation for Telegram WebApp and other webviews
+        (function () {
+            function lockPortrait() {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('portrait').catch(function () { });
+                }
+            }
+            function onInputFocus() {
+                lockPortrait();
+                // Re-lock after keyboard fully opens
+                setTimeout(lockPortrait, 300);
+                setTimeout(lockPortrait, 600);
+            }
+            function attachInputListeners() {
+                document.querySelectorAll('input, textarea').forEach(function (el) {
+                    el.addEventListener('focus', onInputFocus);
+                });
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function () {
+                    lockPortrait();
+                    attachInputListeners();
+                });
+            } else {
+                lockPortrait();
+                attachInputListeners();
+            }
+            window.addEventListener('orientationchange', lockPortrait);
+            window.addEventListener('resize', lockPortrait);
+            // Watch for dynamically added inputs (e.g. from Cocos or chat UI)
+            // var observer = new MutationObserver(function () {
+            //     attachInputListeners();
+            // });
+            // observer.observe(document.body, { childList: true, subtree: true });
+        })();
+    </script>
+
+</head>
+
+<body>
+    <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+    <div id="splash">
+        <div class="progress-bar stripes">
+            <span style="width: 0%"></span>
+        </div>
+    </div>
+
+
+
+    <!-- <div id="div_full_screen" style="width: 100%;height: 100%;visibility: visible;display: block;" bis_skin_checked="1">
+        <div id="enterFullscreen" class="enterFullScreen_Portrait" bis_skin_checked="1"></div>
+        <div id="exitFullscreen" class="exitFullScreen_Portrait" bis_skin_checked="1"></div>
+    </div> -->
+
+
+    <!--
+      ĐÃ BỎ Service Worker (không đăng ký, không sw.js, không manifest/PWA).
+      Việc "deploy xong người chơi nhận bản mới" giờ do HTTP cache header lo HOÀN TOÀN —
+      xem generateWebConfig() trong packages/post_build/main.js:
+        - index.7657f.html + assets/<bundle>/index.<ver>.js + config.<ver>.json  → no-cache
+        - còn lại (engine, ảnh, atlas, spine, css) → cache 30 ngày, an toàn vì hash tính theo
+          nội dung nên đổi nội dung là đổi tên file.
+      ĐỪNG thêm lại register() ở đây nếu chưa dựng lại sw.js — sẽ 404 mỗi lần load.
+    -->
+
+    <!-- Safari Crypto Fix MUST be before cocos scripts -->
+    <script>
+        // CRITICAL: Fix for iOS Safari crypto.randomUUID
+        (function () {
+            if (typeof window === 'undefined') return;
+
+            // Create crypto if doesn't exist (very old Safari)
+            if (!window.crypto) {
+                window.crypto = {};
+            }
+
+            // Polyfill randomUUID for Safari < 15.2
+            if (typeof window.crypto.randomUUID !== 'function') {
+
+                window.crypto.randomUUID = function randomUUID() {
+                    const hex = '0123456789abcdef';
+                    let uuid = '';
+
+                    for (let i = 0; i < 36; i++) {
+                        if (i === 8 || i === 13 || i === 18 || i === 23) {
+                            uuid += '-';
+                        } else if (i === 14) {
+                            uuid += '4'; // UUID version 4
+                        } else if (i === 19) {
+                            // UUID variant: bits 10xxxxxx
+                            uuid += hex[(Math.random() * 4 | 8)];
+                        } else {
+                            uuid += hex[Math.floor(Math.random() * 16)];
+                        }
+                    }
+
+                    return uuid;
+                };
+            }
+
+            // Also ensure getRandomValues exists
+            if (!window.crypto.getRandomValues && window.msCrypto) {
+                window.crypto.getRandomValues = window.msCrypto.getRandomValues;
+            }
+        })();
+
+
+    </script>
+
+
+    <!-- MÃ MÁY (FingerprintJS v3.4.2, giấy phép MIT).
+         Suy mã máy từ đặc điểm thiết bị nên xoá sạch dữ liệu trang vẫn ra đúng mã cũ, khác với
+         chuỗi ngẫu nhiên chỉ sống nhờ localStorage.
+
+         TÊN FILE CỐ Ý ĐẶT TRUNG TÍNH. Để nguyên tên gốc có chữ "fingerprint" là trình chặn
+         quảng cáo (uBlock, AdBlock) chặn thẳng — trình duyệt báo ERR_BLOCKED_BY_CLIENT và mã
+         máy không bao giờ tính được. Đừng đổi lại tên cũ.
+
+         Chạy ngay từ đây, trước cả engine: Cocos mất vài trăm ms để nạp, tranh thủ khoảng đó
+         tính xong thì lúc LoadingManager hỏi đã có sẵn. Kết quả ở __SXX_FP_ID, còn __SXX_FP là
+         lời hứa cho ai cần đợi. -->
+    <script src="devid.min.37543.js" charset="utf-8"></script>
+    <script>
+        (function () {
+            window.__SXX_FP_ID = '';
+            if (typeof FingerprintJS === 'undefined') return;
+            window.__SXX_FP = FingerprintJS.load()
+                .then(function (fp) { return fp.get(); })
+                .then(function (r) {
+                    window.__SXX_FP_ID = (r && r.visitorId) || '';
+                    return window.__SXX_FP_ID;
+                })
+                .catch(function () { return ''; });
+        })();
+    </script>
+
+    <script src="src/settings.1d867.js" charset="utf-8"></script>
+
+    <script src="main.29de0.js" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        (function () {
+            // open web debugger console
+            if (typeof VConsole !== 'undefined') {
+                window.vConsole = new VConsole();
+            }
+
+            var debug = window._CCSettings.debug;
+            var splash = document.getElementById('splash');
+            splash.style.display = 'block';
+
+            function loadScript(moduleName, cb) {
+                function scriptLoaded() {
+                    document.body.removeChild(domScript);
+                    domScript.removeEventListener('load', scriptLoaded, false);
+                    cb && cb();
+                };
+                var domScript = document.createElement('script');
+                domScript.async = true;
+                domScript.src = moduleName;
+                domScript.addEventListener('load', scriptLoaded, false);
+                document.body.appendChild(domScript);
+            }
+
+            loadScript(debug ? 'cocos2d-js.js' : 'cocos2d-js-min.955ce.js', function () {
+                if (CC_PHYSICS_BUILTIN || CC_PHYSICS_CANNON) {
+                    loadScript(debug ? 'physics.js' : 'physics-min.ad9a7.js', window.boot);
+                }
+                else {
+                    window.boot();
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

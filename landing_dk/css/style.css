@@ -1,0 +1,455 @@
+/* =========================================================
+   SXXBET – Landing đăng ký / tải app
+   ========================================================= */
+
+:root {
+  --bg: #06030f;
+  --violet: #7c3aed;
+  --violet-l: #c084fc;
+  --gold: #fbbf24;
+  --txt: #e9e4f5;
+  --muted: #a99fc4;
+
+  --stage: 1780px;
+
+  --display: 'Arial Black', 'Arial Bold', Arial, Helvetica, sans-serif;
+  --body: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--body);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+a {
+  text-decoration: none;
+  color: inherit;
+}
+.page {
+  padding-bottom: 48px;
+}
+.is-hidden {
+  display: none !important;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* ============ HERO ============ */
+.hero {
+  position: relative;
+  padding-bottom: 20px;
+}
+.hero__bg {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 100%;
+  background: url('../assets/img/bg-hero.png') center top/cover no-repeat, var(--bg);
+  z-index: 0;
+}
+.hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 3, 15, 0.35) 0%, rgba(6, 3, 15, 0.15) 40%, var(--bg) 100%);
+}
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--stage);
+  margin: 0 auto;
+  padding: 26px 20px 0;
+  display: grid;
+  gap: 4px 34px;
+  grid-template-columns: minmax(0, 600px) minmax(0, 600px) minmax(0, 440px);
+  justify-content: center;
+  grid-template-areas:
+    'logo   logo   logo'
+    'head   head   head'
+    'promo  reg    cats'
+    'plates plates plates';
+  align-items: start;
+}
+
+/* logo */
+.logo {
+  grid-area: logo;
+  justify-self: center;
+  width: 190px;
+}
+
+/* headline (ảnh) */
+.headline {
+  grid-area: head;
+  margin: 6px 0 18px;
+  display: flex;
+  justify-content: center;
+}
+.headline img {
+  width: 100%;
+  max-width: 700px;
+}
+
+/* ảnh trái 88K */
+.promo {
+  grid-area: promo;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+}
+.promo img {
+  width: 100%;
+  max-width: 641px;
+}
+
+/* cột phải – 4 danh mục */
+.cats {
+  grid-area: cats;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cats img {
+  width: 100%;
+  max-width: 373px;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.45));
+  transition: transform 0.18s ease;
+}
+.cats img:hover {
+  transform: translateY(-3px);
+}
+
+/* ============ THẺ TRUNG TÂM ============ */
+.reg {
+  grid-area: reg;
+  align-self: center;
+  width: 100%;
+  max-width: 585px;
+  margin: 0 auto;
+  padding: 46px 48px;
+  background: url('../assets/img/reg-card.png') center/100% 100% no-repeat;
+  background-color: rgba(20, 16, 40, 0.72);
+  border-radius: 24px;
+}
+.reg__view {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- form đăng ký --- */
+.reg__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 58px;
+  padding: 0 16px;
+  background: url('../assets/img/field.png') center/100% 100% no-repeat;
+  background-color: rgba(8, 5, 20, 0.55);
+  border-radius: 12px;
+}
+.field__ic {
+  flex: none;
+  width: 20px;
+  margin-right: 12px;
+  opacity: 0.9;
+}
+.field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--txt);
+  font-size: 15px;
+  font-family: var(--body);
+  outline: none;
+}
+.field input::placeholder {
+  color: #8b83a8;
+}
+.field__eye {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.18s ease;
+}
+.field__eye:hover {
+  opacity: 1;
+}
+.field__eye img {
+  width: 22px;
+}
+.field__eye.is-on {
+  opacity: 1;
+}
+
+/* captcha */
+.field--captcha {
+  gap: 10px;
+  padding: 8px 10px 8px 16px;
+  height: auto;
+}
+.captcha-image {
+  flex: none;
+  width: 120px;
+  height: 42px;
+  border-radius: 8px;
+  background: rgba(8, 5, 20, 0.6);
+  cursor: pointer;
+  object-fit: cover;
+}
+.captcha-reload {
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+  background: rgba(8, 5, 20, 0.6);
+  color: var(--violet-l);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.captcha-reload:hover {
+  background: rgba(192, 132, 252, 0.15);
+  transform: rotate(90deg);
+}
+
+.reg__msg {
+  margin: 2px 0 -4px;
+  font-size: 13.5px;
+  color: #ff6b81;
+  text-align: center;
+}
+.reg__msg.is-info {
+  color: var(--violet-l);
+}
+
+/* nút Đăng ký ngay (ảnh) */
+.reg__submit {
+  margin-top: 6px;
+  align-self: center;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 489 / 86;
+  border: 0;
+  background: url('../assets/img/btn-register.png') center/contain no-repeat;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.reg__submit:hover:not(:disabled),
+.reg__submit:focus-visible {
+  transform: translateY(-3px);
+  filter: brightness(1.1);
+}
+.reg__submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.reg__applink {
+  margin-top: 14px;
+  align-self: center;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.reg__applink:hover {
+  filter: brightness(1.15);
+}
+
+/* --- màn hình thành công / tải app --- */
+#view-success {
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0;
+}
+#view-success .reg__applink {
+  margin-top: 0;
+}
+.reg__done {
+  margin: 6px 0 6px;
+  font-family: var(--display);
+  font-size: 27px;
+  white-space: nowrap;
+  text-align: center;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 18px rgba(168, 85, 247, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.reg__btn {
+  width: 100%;
+  max-width: 430px;
+  aspect-ratio: 369 / 65;
+  background: center/contain no-repeat;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.reg__btn:hover,
+.reg__btn:focus-visible {
+  transform: translateY(-3px);
+  filter: brightness(1.12);
+}
+.reg__btn--web {
+  background-image: url('../assets/img/btnPlayWeb.png');
+}
+.reg__btn--app {
+  background-image: url('../assets/img/btnInstallNow.png');
+}
+.reg__note {
+  margin: 6px 0 0;
+  max-width: 430px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  text-align: center;
+}
+.reg__note b {
+  color: var(--violet-l);
+}
+
+/* ============ HÀNG DƯỚI ============ */
+.plates {
+  grid-area: plates;
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  align-items: stretch;
+}
+.plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 26px;
+  border: 1px solid rgba(192, 132, 252, 0.18);
+  border-radius: 18px;
+  background: rgba(12, 8, 28, 0.55);
+}
+.plate img {
+  width: 100%;
+  max-width: 560px;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+@media (max-width: 1180px) {
+  .hero__inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px 24px;
+    grid-template-areas:
+      'logo   logo'
+      'head   head'
+      'reg    reg'
+      'promo  cats'
+      'plates plates';
+  }
+  .reg {
+    align-self: auto;
+    max-width: 560px;
+  }
+  .promo,
+  .cats {
+    align-self: start;
+  }
+  .plates {
+    gap: 16px;
+  }
+  .plate {
+    padding: 16px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+@media (max-width: 720px) {
+  .hero__inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    grid-template-areas:
+      'logo'
+      'head'
+      'reg'
+      'promo'
+      'cats'
+      'plates';
+    padding-top: 20px;
+  }
+
+  .logo {
+    width: 150px;
+  }
+  .headline {
+    margin: 4px 0 6px;
+  }
+
+  .reg {
+    max-width: 460px;
+    padding: 30px 22px;
+    border-radius: 18px;
+  }
+  .field {
+    height: 52px;
+  }
+  .reg__done {
+    font-size: 24px;
+  }
+
+  .promo img {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .cats {
+    max-width: 460px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .plates {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
