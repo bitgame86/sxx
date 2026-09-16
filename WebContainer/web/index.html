@@ -107,7 +107,7 @@
       ĐÃ BỎ Service Worker (không đăng ký, không sw.js, không manifest/PWA).
       Việc "deploy xong người chơi nhận bản mới" giờ do HTTP cache header lo HOÀN TOÀN —
       xem generateWebConfig() trong packages/post_build/main.js:
-        - index.20fe9.html + assets/<bundle>/index.<ver>.js + config.<ver>.json  → no-cache
+        - index.0da7c.html + assets/<bundle>/index.<ver>.js + config.<ver>.json  → no-cache
         - còn lại (engine, ảnh, atlas, spine, css) → cache 30 ngày, an toàn vì hash tính theo
           nội dung nên đổi nội dung là đổi tên file.
       ĐỪNG thêm lại register() ở đây nếu chưa dựng lại sw.js — sẽ 404 mỗi lần load.
@@ -184,9 +184,9 @@
         })();
     </script>
 
-    <script src="src/settings.7747d.js" charset="utf-8"></script>
+    <script src="src/settings.1403b.js" charset="utf-8"></script>
 
-    <script src="main.1ca62.js" charset="utf-8"></script>
+    <script src="main.9a468.js" charset="utf-8"></script>
 
     <script type="text/javascript">
         (function () {
