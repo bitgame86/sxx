@@ -62,7 +62,7 @@ ul {
 /* ============ HERO ============ */
 .hero {
   position: relative;
-  padding-bottom: 40px;
+  padding-bottom: 20px;
 }
 .hero__bg {
   position: absolute;
@@ -109,7 +109,7 @@ ul {
 /* headline */
 .headline {
   grid-area: head;
-  margin: 23px 0 0;
+  margin: 0px 0 0;
   font-family: var(--display);
   font-size: 44px;
   line-height: 1.12;
@@ -142,7 +142,7 @@ ul {
 /* subline */
 .subline {
   grid-area: sub;
-  margin: 32px 0 0;
+  margin: 0px 0 0;
   font-size: 26px;
   text-align: center;
   color: #efe9ff;
@@ -319,7 +319,7 @@ ul {
 /* ============ CTA ============ */
 .cta {
   grid-area: cta;
-  margin-top: 36px;
+  /* margin-top: 36px; */
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -404,7 +404,7 @@ ul {
 
 /* ============ NỘI DUNG ============ */
 .content {
-  padding: 52px 20px 0;
+  padding: 10px 20px 0;
 }
 .wrap {
   max-width: var(--wrap);

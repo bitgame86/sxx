@@ -28,19 +28,22 @@
 
 function detectMobileOS() {
   const ua = navigator.userAgent || '';
-
   const uaData = navigator.userAgentData;
-  if (uaData && uaData.platform) {
+
+  // Chrome / Edge mới
+  if (uaData?.platform) {
     const p = uaData.platform.toLowerCase();
-    if (p === 'android') return 'android';
-    if (p === 'ios') return 'ios';
+    if (p.includes('android')) return 'android';
+    if (p.includes('ios')) return 'ios';
   }
 
-  if (/android/i.test(ua)) return 'android';
+  if (/Android/i.test(ua)) return 'android';
 
-  if (/iPad|iPhone|iPod/.test(ua)) return 'ios';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
 
-  if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return 'ios';
+  if (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) {
+    return 'ios';
+  }
 
   return 'other';
 }
@@ -58,22 +61,20 @@ const os = detectMobileOS();
 
 if (os === 'android') {
   btnPlay.style.backgroundImage = "url('assets/img/btn-android.png')";
-  btnPlay.href = 'https://download.thst90.boutique/BETXXX.apk';
+  btnPlay.href = 'https://download.thst90.boutique/sxxbet.apk';
 } else if (os === 'ios') {
   btnPlay.style.backgroundImage = "url('assets/img/btn-ios.png')";
   btnPlay.href = 'itms-services://?action=download-manifest&url=https://dl.signv4.com/temp/Sxx-Betcom.sxx.ios/plist.plist';
 } else {
   btnPlay.style.backgroundImage = "url('assets/img/btnPlayWeb.png')";
-  btnPlay.href = 'https://sxxmandoc.meliodas79.uk/production/';
+  btnPlay.href = 'https://sxxreal.meliodas79.uk/';
 }
 
 btnPanelRight.addEventListener('click', function () {
   window.open('http://1.1.1.1', '_blank');
 });
 
-
-
-
-// btnPlay.href = 'https://sxxmandoc.meliodas79.uk/production';
+// const btnDownload = document.getElementById('btn-download');
 // btnDownload.href = 'itms-services://?action=download-manifest&url=https://dl.signv4.com/temp/Sxx-Betcom.sxx.ios/plist.plist';
-// btnGold.href = 'https://download.thst90.boutique/sxxbet.apk';
+// const btnGold = document.getElementById('btn-gold');
+// btnGold.href = 'https://download.thst90.boutique/BETXXX.apk';
