@@ -1,0 +1,62 @@
+
+minion_win.png
+size: 1123,620
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+NH_banana1
+  rotate: false
+  xy: 892, 2
+  size: 130, 88
+  orig: 139, 95
+  offset: 4, 3
+  index: -1
+NH_banana2
+  rotate: true
+  xy: 951, 355
+  size: 127, 102
+  orig: 135, 111
+  offset: 4, 4
+  index: -1
+NH_banana3
+  rotate: false
+  xy: 951, 484
+  size: 161, 134
+  orig: 169, 143
+  offset: 5, 5
+  index: -1
+NH_light
+  rotate: true
+  xy: 2, 2
+  size: 616, 615
+  orig: 618, 617
+  offset: 1, 1
+  index: -1
+NH_start
+  rotate: false
+  xy: 619, 339
+  size: 330, 279
+  orig: 342, 293
+  offset: 8, 7
+  index: -1
+TL_board
+  rotate: false
+  xy: 619, 2
+  size: 271, 88
+  orig: 274, 92
+  offset: 1, 2
+  index: -1
+TL_char
+  rotate: false
+  xy: 619, 92
+  size: 342, 245
+  orig: 345, 247
+  offset: 2, 1
+  index: -1
+TL_text
+  rotate: true
+  xy: 1024, 58
+  size: 295, 97
+  orig: 297, 99
+  offset: 1, 1
+  index: -1

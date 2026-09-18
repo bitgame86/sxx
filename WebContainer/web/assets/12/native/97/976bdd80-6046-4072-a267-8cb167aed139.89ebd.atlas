@@ -1,0 +1,104 @@
+
+nohu.png
+size: 2024,1155
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 529, 28
+  size: 181, 135
+  orig: 181, 135
+  offset: 0, 0
+  index: -1
+b
+  rotate: true
+  xy: 1662, 716
+  size: 437, 303
+  orig: 437, 303
+  offset: 0, 0
+  index: -1
+c
+  rotate: true
+  xy: 1355, 83
+  size: 410, 324
+  orig: 410, 324
+  offset: 0, 0
+  index: -1
+d
+  rotate: false
+  xy: 880, 2
+  size: 473, 475
+  orig: 473, 475
+  offset: 0, 0
+  index: -1
+e
+  rotate: false
+  xy: 388, 165
+  size: 444, 103
+  orig: 444, 103
+  offset: 0, 0
+  index: -1
+f
+  rotate: false
+  xy: 638, 289
+  size: 240, 188
+  orig: 240, 188
+  offset: 0, 0
+  index: -1
+fx1
+  rotate: false
+  xy: 1681, 386
+  size: 341, 328
+  orig: 341, 328
+  offset: 0, 0
+  index: -1
+fx2
+  rotate: true
+  xy: 638, 479
+  size: 674, 369
+  orig: 674, 369
+  offset: 0, 0
+  index: -1
+fx3
+  rotate: true
+  xy: 1352, 495
+  size: 658, 308
+  orig: 658, 308
+  offset: 0, 0
+  index: -1
+fx4
+  rotate: true
+  xy: 1009, 495
+  size: 658, 341
+  orig: 658, 341
+  offset: 0, 0
+  index: -1
+fx5
+  rotate: true
+  xy: 2, 270
+  size: 883, 634
+  orig: 883, 634
+  offset: 0, 0
+  index: -1
+fx6
+  rotate: false
+  xy: 1681, 71
+  size: 325, 313
+  orig: 325, 313
+  offset: 0, 0
+  index: -1
+khung
+  rotate: false
+  xy: 2, 22
+  size: 525, 92
+  orig: 525, 92
+  offset: 0, 0
+  index: -1
+text
+  rotate: false
+  xy: 2, 116
+  size: 384, 152
+  orig: 384, 152
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,104 @@
+
+icon_game_avi.png
+size: 499,499
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: true
+  xy: 255, 89
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+11
+  rotate: false
+  xy: 2, 2
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+13
+  rotate: false
+  xy: 86, 2
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+3
+  rotate: false
+  xy: 318, 66
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+5
+  rotate: true
+  xy: 255, 5
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+7
+  rotate: true
+  xy: 402, 45
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+9
+  rotate: false
+  xy: 318, 3
+  size: 82, 61
+  orig: 84, 63
+  offset: 1, 1
+  index: -1
+bg
+  rotate: false
+  xy: 2, 271
+  size: 320, 226
+  orig: 322, 228
+  offset: 1, 1
+  index: -1
+light
+  rotate: true
+  xy: 324, 324
+  size: 173, 156
+  orig: 175, 158
+  offset: 1, 1
+  index: -1
+light1
+  rotate: true
+  xy: 234, 173
+  size: 96, 86
+  orig: 98, 88
+  offset: 1, 1
+  index: -1
+line_light_BI
+  rotate: false
+  xy: 195, 13
+  size: 58, 158
+  orig: 60, 160
+  offset: 1, 1
+  index: -1
+rket
+  rotate: true
+  xy: 324, 129
+  size: 193, 154
+  orig: 195, 156
+  offset: 1, 1
+  index: -1
+smoke
+  rotate: false
+  xy: 2, 65
+  size: 191, 122
+  orig: 193, 124
+  offset: 1, 1
+  index: -1
+text
+  rotate: false
+  xy: 2, 189
+  size: 230, 80
+  orig: 232, 82
+  offset: 1, 1
+  index: -1

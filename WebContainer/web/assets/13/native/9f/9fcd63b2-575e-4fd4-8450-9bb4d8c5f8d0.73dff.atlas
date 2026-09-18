@@ -1,0 +1,41 @@
+
+viking_win.png
+size: 805,497
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+FS_aura
+  rotate: false
+  xy: 2, 9
+  size: 486, 486
+  orig: 498, 498
+  offset: 6, 6
+  index: -1
+FS_board
+  rotate: true
+  xy: 490, 90
+  size: 405, 139
+  orig: 416, 145
+  offset: 6, 4
+  index: -1
+FS_coin
+  rotate: true
+  xy: 631, 312
+  size: 183, 172
+  orig: 193, 182
+  offset: 5, 5
+  index: -1
+FS_coin2
+  rotate: true
+  xy: 631, 122
+  size: 188, 165
+  orig: 198, 175
+  offset: 5, 5
+  index: -1
+FS_text
+  rotate: false
+  xy: 490, 2
+  size: 221, 86
+  orig: 224, 89
+  offset: 1, 2
+  index: -1

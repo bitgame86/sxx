@@ -1,0 +1,55 @@
+
+tai_xiu_moc_bai_vietnam.png
+size: 328,504
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Layer 1
+  rotate: true
+  xy: 256, 15
+  size: 50, 52
+  orig: 52, 54
+  offset: 1, 1
+  index: -1
+a
+  rotate: true
+  xy: 4, 44
+  size: 226, 205
+  orig: 228, 207
+  offset: 1, 1
+  index: -1
+bg
+  rotate: false
+  xy: 4, 274
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+mb
+  rotate: true
+  xy: 213, 132
+  size: 138, 39
+  orig: 140, 41
+  offset: 1, 1
+  index: -1
+nnumber
+  rotate: false
+  xy: 4, 4
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1
+t1
+  rotate: false
+  xy: 213, 69
+  size: 94, 59
+  orig: 96, 61
+  offset: 1, 1
+  index: -1
+t2
+  rotate: true
+  xy: 256, 157
+  size: 113, 64
+  orig: 115, 66
+  offset: 1, 1
+  index: -1

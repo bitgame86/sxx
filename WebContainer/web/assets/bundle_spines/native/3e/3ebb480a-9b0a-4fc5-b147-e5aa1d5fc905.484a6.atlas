@@ -1,0 +1,76 @@
+
+phom.png
+size: 544,496
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: false
+  xy: 265, 154
+  size: 131, 108
+  orig: 133, 110
+  offset: 1, 1
+  index: -1
+b/1
+  rotate: false
+  xy: 4, 15
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+b/2
+  rotate: false
+  xy: 328, 266
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+b/3
+  rotate: false
+  xy: 135, 15
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+b/4
+  rotate: false
+  xy: 266, 23
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+b/5
+  rotate: false
+  xy: 400, 135
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+b/6
+  rotate: false
+  xy: 397, 4
+  size: 127, 127
+  orig: 129, 129
+  offset: 1, 1
+  index: -1
+bg
+  rotate: false
+  xy: 4, 266
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+text
+  rotate: false
+  xy: 328, 397
+  size: 212, 95
+  orig: 214, 97
+  offset: 1, 1
+  index: -1
+text2
+  rotate: false
+  xy: 4, 146
+  size: 257, 116
+  orig: 259, 118
+  offset: 1, 1
+  index: -1

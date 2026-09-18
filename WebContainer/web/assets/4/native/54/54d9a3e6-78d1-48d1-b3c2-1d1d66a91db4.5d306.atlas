@@ -1,0 +1,41 @@
+
+hunh.png
+size: 1303,1387
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cap
+  rotate: true
+  xy: 733, 807
+  size: 578, 568
+  orig: 578, 568
+  offset: 0, 0
+  index: -1
+ion
+  rotate: false
+  xy: 2, 2
+  size: 628, 507
+  orig: 628, 507
+  offset: 0, 0
+  index: -1
+lightbg
+  rotate: true
+  xy: 2, 511
+  size: 874, 729
+  orig: 874, 729
+  offset: 0, 0
+  index: -1
+lightlens
+  rotate: false
+  xy: 632, 38
+  size: 640, 471
+  orig: 640, 471
+  offset: 0, 0
+  index: -1
+nh
+  rotate: false
+  xy: 733, 599
+  size: 361, 206
+  orig: 361, 206
+  offset: 0, 0
+  index: -1

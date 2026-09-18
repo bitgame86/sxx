@@ -1,0 +1,41 @@
+
+ICE.png
+size: 843,595
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+TL_text1
+  rotate: false
+  xy: 2, 2
+  size: 618, 122
+  orig: 620, 124
+  offset: 1, 1
+  index: -1
+TL_text2
+  rotate: false
+  xy: 2, 126
+  size: 643, 155
+  orig: 651, 162
+  offset: 4, 4
+  index: -1
+TSL_aura
+  rotate: false
+  xy: 535, 369
+  size: 237, 224
+  orig: 260, 246
+  offset: 11, 11
+  index: -1
+TSL_snow
+  rotate: false
+  xy: 647, 145
+  size: 194, 222
+  orig: 224, 226
+  offset: 16, 2
+  index: -1
+TSL_snow2
+  rotate: false
+  xy: 2, 283
+  size: 531, 310
+  orig: 531, 310
+  offset: 0, 0
+  index: -1

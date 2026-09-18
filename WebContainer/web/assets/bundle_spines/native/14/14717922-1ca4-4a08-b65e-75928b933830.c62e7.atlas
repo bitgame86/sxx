@@ -1,0 +1,174 @@
+
+icon_xd_doc.png
+size: 701,575
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+TUSOI
+  rotate: false
+  xy: 341, 412
+  size: 214, 85
+  orig: 218, 88
+  offset: 2, 2
+  index: -1
+bat
+  rotate: false
+  xy: 543, 86
+  size: 155, 155
+  orig: 160, 160
+  offset: 3, 1
+  index: -1
+bg
+  rotate: false
+  xy: 2, 108
+  size: 320, 465
+  orig: 320, 465
+  offset: 0, 0
+  index: -1
+dia
+  rotate: true
+  xy: 324, 113
+  size: 204, 154
+  orig: 214, 185
+  offset: 5, 3
+  index: -1
+gold1
+  rotate: false
+  xy: 557, 319
+  size: 125, 99
+  orig: 132, 106
+  offset: 3, 3
+  index: -1
+gold2
+  rotate: false
+  xy: 393, 329
+  size: 84, 81
+  orig: 92, 89
+  offset: 4, 4
+  index: -1
+live
+  rotate: false
+  xy: 341, 2
+  size: 165, 109
+  orig: 171, 114
+  offset: 3, 2
+  index: -1
+live2
+  rotate: false
+  xy: 557, 420
+  size: 136, 77
+  orig: 142, 83
+  offset: 3, 3
+  index: -1
+text_02
+  rotate: false
+  xy: 667, 523
+  size: 26, 50
+  orig: 357, 67
+  offset: 18, 8
+  index: -1
+text_04
+  rotate: false
+  xy: 612, 256
+  size: 58, 61
+  orig: 357, 67
+  offset: 16, 0
+  index: -1
+text_06
+  rotate: true
+  xy: 324, 324
+  size: 86, 67
+  orig: 357, 67
+  offset: 17, 0
+  index: -1
+text_08
+  rotate: true
+  xy: 140, 4
+  size: 102, 67
+  orig: 357, 67
+  offset: 32, 0
+  index: -1
+text_10
+  rotate: true
+  xy: 71, 3
+  size: 103, 67
+  orig: 357, 67
+  offset: 63, 0
+  index: -1
+text_12
+  rotate: true
+  xy: 2, 2
+  size: 104, 67
+  orig: 357, 67
+  offset: 94, 0
+  index: -1
+text_14
+  rotate: true
+  xy: 480, 243
+  size: 97, 67
+  orig: 357, 67
+  offset: 124, 0
+  index: -1
+text_16
+  rotate: true
+  xy: 272, 6
+  size: 100, 67
+  orig: 357, 67
+  offset: 153, 0
+  index: -1
+text_18
+  rotate: true
+  xy: 209, 4
+  size: 102, 61
+  orig: 357, 67
+  offset: 184, 0
+  index: -1
+text_20
+  rotate: true
+  xy: 480, 144
+  size: 97, 61
+  orig: 357, 67
+  offset: 219, 0
+  index: -1
+text_22
+  rotate: false
+  xy: 508, 23
+  size: 93, 61
+  orig: 357, 67
+  offset: 244, 0
+  index: -1
+text_24
+  rotate: true
+  xy: 549, 251
+  size: 66, 61
+  orig: 357, 67
+  offset: 275, 0
+  index: -1
+text_26
+  rotate: false
+  xy: 664, 25
+  size: 35, 59
+  orig: 357, 67
+  offset: 305, 0
+  index: -1
+xocdialive
+  rotate: false
+  xy: 341, 499
+  size: 324, 74
+  orig: 328, 79
+  offset: 2, 3
+  index: -1
+xx1
+  rotate: false
+  xy: 480, 342
+  size: 72, 68
+  orig: 78, 74
+  offset: 3, 3
+  index: -1
+xx2
+  rotate: true
+  xy: 603, 24
+  size: 60, 59
+  orig: 64, 63
+  offset: 1, 1
+  index: -1

@@ -1,0 +1,27 @@
+
+sanhuitjpsieulon.png
+size: 372,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gold
+  rotate: false
+  xy: 2, 20
+  size: 180, 155
+  orig: 180, 155
+  offset: 0, 0
+  index: -1
+sparkles
+  rotate: true
+  xy: 184, 48
+  size: 127, 108
+  orig: 127, 108
+  offset: 0, 0
+  index: -1
+text
+  rotate: true
+  xy: 294, 2
+  size: 173, 76
+  orig: 173, 76
+  offset: 0, 0
+  index: -1

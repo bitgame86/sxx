@@ -1,0 +1,55 @@
+
+thang lon.png
+size: 1510,344
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+a
+  rotate: true
+  xy: 899, 105
+  size: 94, 79
+  orig: 94, 79
+  offset: 0, 0
+  index: -1
+b
+  rotate: false
+  xy: 1402, 235
+  size: 106, 107
+  orig: 106, 107
+  offset: 0, 0
+  index: -1
+c
+  rotate: true
+  xy: 732, 14
+  size: 185, 165
+  orig: 185, 165
+  offset: 0, 0
+  index: -1
+d
+  rotate: false
+  xy: 1194, 101
+  size: 206, 241
+  orig: 206, 241
+  offset: 0, 0
+  index: -1
+khung
+  rotate: false
+  xy: 899, 7
+  size: 525, 92
+  orig: 525, 92
+  offset: 0, 0
+  index: -1
+light
+  rotate: false
+  xy: 2, 2
+  size: 728, 340
+  orig: 728, 340
+  offset: 0, 0
+  index: -1
+text
+  rotate: false
+  xy: 732, 201
+  size: 460, 141
+  orig: 460, 141
+  offset: 0, 0
+  index: -1

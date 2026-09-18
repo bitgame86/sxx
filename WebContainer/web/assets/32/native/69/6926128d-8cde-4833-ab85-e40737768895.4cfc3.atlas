@@ -1,0 +1,41 @@
+
+ICE.png
+size: 1241,397
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+NH_aura
+  rotate: true
+  xy: 982, 122
+  size: 273, 257
+  orig: 298, 281
+  offset: 13, 12
+  index: -1
+NH_char
+  rotate: true
+  xy: 2, 2
+  size: 393, 454
+  orig: 398, 458
+  offset: 3, 2
+  index: -1
+NH_snow
+  rotate: false
+  xy: 458, 23
+  size: 334, 188
+  orig: 334, 188
+  offset: 0, 0
+  index: -1
+NH_snow1
+  rotate: false
+  xy: 794, 26
+  size: 161, 185
+  orig: 183, 189
+  offset: 14, 2
+  index: -1
+NH_text
+  rotate: false
+  xy: 458, 213
+  size: 522, 182
+  orig: 530, 188
+  offset: 4, 4
+  index: -1

@@ -1,0 +1,20 @@
+
+alad_nhan2.png
+size: 236,124
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+blur_big2
+  rotate: false
+  xy: 124, 12
+  size: 110, 110
+  orig: 110, 110
+  offset: 0, 0
+  index: -1
+x2
+  rotate: false
+  xy: 2, 2
+  size: 120, 120
+  orig: 122, 122
+  offset: 1, 1
+  index: -1

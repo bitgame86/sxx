@@ -1,0 +1,69 @@
+
+huanline.png
+size: 592,527
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Layer 1
+  rotate: true
+  xy: 2, 232
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 2
+  rotate: false
+  xy: 2, 117
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 3
+  rotate: false
+  xy: 2, 2
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 4
+  rotate: true
+  xy: 117, 232
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 5
+  rotate: true
+  xy: 232, 232
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 6
+  rotate: false
+  xy: 297, 117
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 7
+  rotate: false
+  xy: 297, 2
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 8
+  rotate: true
+  xy: 347, 232
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1
+Layer 9
+  rotate: true
+  xy: 462, 232
+  size: 293, 113
+  orig: 293, 113
+  offset: 0, 0
+  index: -1

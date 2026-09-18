@@ -1,0 +1,48 @@
+
+Aladin.png
+size: 802,311
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+char_binh
+  rotate: false
+  xy: 328, 127
+  size: 401, 182
+  orig: 401, 182
+  offset: 0, 0
+  index: -1
+char_body
+  rotate: true
+  xy: 2, 42
+  size: 267, 324
+  orig: 267, 324
+  offset: 0, 0
+  index: -1
+char_handL
+  rotate: true
+  xy: 471, 4
+  size: 121, 158
+  orig: 121, 158
+  offset: 0, 0
+  index: -1
+char_handR
+  rotate: true
+  xy: 328, 2
+  size: 123, 141
+  orig: 123, 141
+  offset: 0, 0
+  index: -1
+char_handR1
+  rotate: true
+  xy: 731, 214
+  size: 95, 60
+  orig: 96, 62
+  offset: 0, 1
+  index: -1
+char_head
+  rotate: true
+  xy: 631, 7
+  size: 118, 169
+  orig: 118, 169
+  offset: 0, 0
+  index: -1

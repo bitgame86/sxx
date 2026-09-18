@@ -1,0 +1,27 @@
+
+itwild.png
+size: 445,209
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bg
+  rotate: false
+  xy: 2, 12
+  size: 212, 195
+  orig: 215, 197
+  offset: 1, 1
+  index: -1
+nv
+  rotate: true
+  xy: 216, 2
+  size: 205, 161
+  orig: 220, 173
+  offset: 13, 4
+  index: -1
+wild
+  rotate: true
+  xy: 379, 55
+  size: 152, 64
+  orig: 159, 69
+  offset: 3, 3
+  index: -1

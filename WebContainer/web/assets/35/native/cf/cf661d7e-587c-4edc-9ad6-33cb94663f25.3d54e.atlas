@@ -1,0 +1,48 @@
+
+DRAGON.png
+size: 326,326
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+freespin
+  rotate: false
+  xy: 105, 28
+  size: 98, 34
+  orig: 102, 37
+  offset: 2, 2
+  index: -1
+ho
+  rotate: false
+  xy: 2, 64
+  size: 211, 74
+  orig: 213, 76
+  offset: 1, 1
+  index: -1
+ho_glow
+  rotate: false
+  xy: 2, 231
+  size: 232, 93
+  orig: 236, 97
+  offset: 2, 2
+  index: -1
+multiple
+  rotate: false
+  xy: 2, 25
+  size: 101, 37
+  orig: 105, 41
+  offset: 2, 2
+  index: -1
+rong
+  rotate: true
+  xy: 236, 95
+  size: 229, 88
+  orig: 233, 92
+  offset: 2, 2
+  index: -1
+rong_glow
+  rotate: false
+  xy: 2, 140
+  size: 230, 89
+  orig: 233, 93
+  offset: 2, 2
+  index: -1

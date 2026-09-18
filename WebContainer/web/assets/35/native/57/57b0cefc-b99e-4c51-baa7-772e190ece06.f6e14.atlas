@@ -1,0 +1,27 @@
+
+btnquay.png
+size: 333,168
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+mbtnquay
+  rotate: false
+  xy: 2, 2
+  size: 198, 164
+  orig: 198, 164
+  offset: 0, 0
+  index: -1
+txtquay
+  rotate: false
+  xy: 202, 2
+  size: 129, 56
+  orig: 129, 56
+  offset: 0, 0
+  index: -1
+vt
+  rotate: false
+  xy: 202, 60
+  size: 106, 106
+  orig: 106, 106
+  offset: 0, 0
+  index: -1

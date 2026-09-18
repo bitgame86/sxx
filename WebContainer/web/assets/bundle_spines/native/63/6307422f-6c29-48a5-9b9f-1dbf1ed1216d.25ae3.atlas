@@ -1,0 +1,48 @@
+
+minion.png
+size: 683,231
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+4.bg
+  rotate: false
+  xy: 2, 3
+  size: 320, 226
+  orig: 320, 226
+  offset: 0, 0
+  index: -1
+4_number
+  rotate: false
+  xy: 324, 2
+  size: 248, 36
+  orig: 248, 36
+  offset: 0, 0
+  index: -1
+m1
+  rotate: false
+  xy: 451, 40
+  size: 128, 138
+  orig: 128, 138
+  offset: 0, 0
+  index: -1
+m2
+  rotate: false
+  xy: 324, 40
+  size: 125, 189
+  orig: 125, 189
+  offset: 0, 0
+  index: -1
+m3
+  rotate: false
+  xy: 581, 72
+  size: 100, 106
+  orig: 100, 106
+  offset: 0, 0
+  index: -1
+minion
+  rotate: false
+  xy: 451, 180
+  size: 224, 49
+  orig: 226, 51
+  offset: 1, 1
+  index: -1
