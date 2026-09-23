@@ -24,7 +24,7 @@
     <!--
       CHỈ giữ đúng dòng favicon này, và PHẢI để đường dẫn TƯƠNG ĐỐI.
       Build bật md5Cache (settings/builder.json) nên mọi file trong build-templates bị đổi tên
-      thành <tên>.<hash>.<ext>; Cocos chỉ viết lại được tham chiếu tương đối trong index.fba81.html
+      thành <tên>.<hash>.<ext>; Cocos chỉ viết lại được tham chiếu tương đối trong index.6f128.html
       (favicon.1a27f.ico -> favicon.<hash>.ico). Đường dẫn tuyệt đối kiểu "/apple-touch-icon.png"
       KHÔNG được viết lại, mà bản không-hash cũng không tồn tại -> 404.
       Trước đây có packages/post_build copy lại bản không-hash, nay đã gỡ hẳn.
@@ -121,7 +121,7 @@
       khỏi repo (commit 074e7f9, -75 dòng). Nên bản build KHÔNG kèm web.config.
 
       ⚠️ KHI DEPLOY: chỉ copy đè, TUYỆT ĐỐI ĐỪNG xoá sạch thư mục trên server — mất web.config là:
-        - index.fba81.html hết no-cache -> deploy xong người chơi vẫn dính bản cũ;
+        - index.6f128.html hết no-cache -> deploy xong người chơi vẫn dính bản cũ;
         - mất khai báo MIME cho .jsc/.pkm/.astc/.wasm/.pack/.atlas -> IIS trả 404 và game
           TRẮNG MÀN HÌNH mà không báo lỗi gì.
       Lỡ mất thì lấy lại bản cũ: git show 074e7f9^:build-templates/web-mobile/web.config
@@ -198,9 +198,9 @@
         })();
     </script>
 
-    <script src="src/settings.cf409.js" charset="utf-8"></script>
+    <script src="src/settings.598c0.js" charset="utf-8"></script>
 
-    <script src="main.59083.js" charset="utf-8"></script>
+    <script src="main.01ecb.js" charset="utf-8"></script>
 
     <script type="text/javascript">
         (function () {
