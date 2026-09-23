@@ -21,7 +21,15 @@
     <meta name="format-detection" content="telephone=no">
     <!-- PWA Important -->
     <meta name="theme-color" content="#000000">
-    <link rel="icon" href="favicon.139c3.ico" />
+    <!--
+      CHỈ giữ đúng dòng favicon này, và PHẢI để đường dẫn TƯƠNG ĐỐI.
+      Build bật md5Cache (settings/builder.json) nên mọi file trong build-templates bị đổi tên
+      thành <tên>.<hash>.<ext>; Cocos chỉ viết lại được tham chiếu tương đối trong index.fba81.html
+      (favicon.1a27f.ico -> favicon.<hash>.ico). Đường dẫn tuyệt đối kiểu "/apple-touch-icon.png"
+      KHÔNG được viết lại, mà bản không-hash cũng không tồn tại -> 404.
+      Trước đây có packages/post_build copy lại bản không-hash, nay đã gỡ hẳn.
+    -->
+    <link rel="icon" href="favicon.1a27f.ico" />
     <!-- force webkit on 360 -->
     <meta name="renderer" content="webkit" />
     <meta name="force-rendering" content="webkit" />
@@ -45,7 +53,7 @@
     <!--<link rel="apple-touch-icon" href=".png" />-->
     <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
     <link rel="stylesheet" type="text/css" href="style-mobile.55122.css" />
-    <link rel="stylesheet" type="text/css" href="style.a593c.css" />
+    <link rel="stylesheet" type="text/css" href="style.82b6b.css" />
 
     <script>
         // Lock portrait orientation for Telegram WebApp and other webviews
@@ -105,12 +113,18 @@
 
     <!--
       ĐÃ BỎ Service Worker (không đăng ký, không sw.js, không manifest/PWA).
-      Việc "deploy xong người chơi nhận bản mới" giờ do HTTP cache header lo HOÀN TOÀN —
-      xem generateWebConfig() trong packages/post_build/main.js:
-        - index.19dfd.html + assets/<bundle>/index.<ver>.js + config.<ver>.json  → no-cache
-        - còn lại (engine, ảnh, atlas, spine, css) → cache 30 ngày, an toàn vì hash tính theo
-          nội dung nên đổi nội dung là đổi tên file.
       ĐỪNG thêm lại register() ở đây nếu chưa dựng lại sw.js — sẽ 404 mỗi lần load.
+
+      CACHE HEADER + MIME: do web.config ĐANG NẰM SẴN TRÊN SERVER lo, KHÔNG nằm trong repo.
+      Chú thích cũ ở đây nói việc đó do generateWebConfig() trong packages/post_build/main.js —
+      SAI, cả hàm lẫn package đó đều đã gỡ; build-templates/web-mobile/web.config cũng đã bị xoá
+      khỏi repo (commit 074e7f9, -75 dòng). Nên bản build KHÔNG kèm web.config.
+
+      ⚠️ KHI DEPLOY: chỉ copy đè, TUYỆT ĐỐI ĐỪNG xoá sạch thư mục trên server — mất web.config là:
+        - index.fba81.html hết no-cache -> deploy xong người chơi vẫn dính bản cũ;
+        - mất khai báo MIME cho .jsc/.pkm/.astc/.wasm/.pack/.atlas -> IIS trả 404 và game
+          TRẮNG MÀN HÌNH mà không báo lỗi gì.
+      Lỡ mất thì lấy lại bản cũ: git show 074e7f9^:build-templates/web-mobile/web.config
     -->
 
     <!-- Safari Crypto Fix MUST be before cocos scripts -->
@@ -184,9 +198,9 @@
         })();
     </script>
 
-    <script src="src/settings.37cea.js" charset="utf-8"></script>
+    <script src="src/settings.cf409.js" charset="utf-8"></script>
 
-    <script src="main.76dac.js" charset="utf-8"></script>
+    <script src="main.59083.js" charset="utf-8"></script>
 
     <script type="text/javascript">
         (function () {
